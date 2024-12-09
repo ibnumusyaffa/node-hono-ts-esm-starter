@@ -1,0 +1,18 @@
+node_modules
+build
+dist
+.tap
+.env
+.rendered
+
+# Ignore all files in the storage/app/ directory
+/storage/app/*
+
+# Except for the .gitkeep file
+!/storage/app/.gitkeep
+
+# Ignore all files in the storage/public/ directory
+/storage/public/*
+
+# Except for the .gitkeep file
+!/storage/public/.gitkeep

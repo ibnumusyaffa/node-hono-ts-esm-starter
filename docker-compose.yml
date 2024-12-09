@@ -1,0 +1,52 @@
+version: "3"
+services:
+  app-node-ts:
+    container_name: app-node-ts
+    restart: always
+    build: ./
+    env_file:
+      - .env
+    ports:
+      - 7900:4000
+    depends_on:
+      - rabbitmq
+      - redis
+      - mysql
+
+  forgot-password-worker:
+    build: ./
+    command: npm run user:worker:forgot-password
+    restart: always
+    env_file:
+      - .env
+    depends_on:
+      - rabbitmq
+      - redis
+      - mysql
+
+  redis:
+    image: redis:7.2.5
+    restart: always
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    restart: always
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+
+  mysql:
+    image: mysql:8.0-debian
+    restart: always
+    ports:
+      - 3306:3308
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: testdb
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+    volumes:
+      - mysqldata:/var/lib/mysql
+
+volumes:
+  mysqldata:
