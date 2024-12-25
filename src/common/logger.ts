@@ -1,5 +1,5 @@
 import { pino } from "pino"
-import { Context } from "hono"
+import { type Context } from "hono"
 import { createMiddleware } from "hono/factory"
 import { getContext } from "./context-storage.js"
 

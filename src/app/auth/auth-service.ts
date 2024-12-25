@@ -7,7 +7,7 @@ import { TransactionManager } from "@/common/database/index.js"
 import { UnauthorizedError } from "@/common/error.js"
 import { z } from "zod"
 import { Publisher } from "@/common/rabbit-mq/publisher.js"
-import { ForgotPasswordMessage } from "./auth-worker.js"
+import { type ForgotPasswordMessage } from "./auth-worker.js"
 
 export class AuthService {
   constructor(

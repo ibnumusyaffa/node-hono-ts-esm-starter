@@ -1,4 +1,4 @@
-import { Database } from "@/common/database/types/index.js"
+import { type Database } from "@/common/database/types/index.js"
 import { Transaction } from "kysely"
 
 export class UserRepository {

@@ -1,9 +1,9 @@
 import {
-  ColumnType,
-  Generated,
-  Insertable,
-  Selectable,
-  Updateable,
+  type ColumnType,
+  type Generated,
+  type Insertable,
+  type Selectable,
+  type Updateable,
 } from "kysely"
 
 /* users table */

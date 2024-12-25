@@ -1,4 +1,4 @@
-import { Context } from "hono"
+import { type Context } from "hono"
 import { createMiddleware } from "hono/factory"
 import { AsyncLocalStorage } from "node:async_hooks"
 

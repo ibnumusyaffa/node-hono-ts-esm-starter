@@ -1,7 +1,7 @@
 import { faker } from "@faker-js/faker"
 import type { Kysely } from "kysely"
 import bcrypt from "bcrypt"
-import { NewUser } from "../types/user.js"
+import { type NewUser } from "../types/user.js"
 
 export async function seed(db: Kysely<any>): Promise<void> {
   const users: Array<NewUser> = []

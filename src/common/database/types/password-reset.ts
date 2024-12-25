@@ -1,4 +1,4 @@
-import { ColumnType, Insertable, Selectable, Updateable } from "kysely"
+import { type ColumnType, type Insertable, type Selectable, type Updateable } from "kysely"
 
 /* users table */
 export interface PasswordResetTable {

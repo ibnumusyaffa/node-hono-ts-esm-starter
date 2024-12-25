@@ -5,11 +5,15 @@
     "target": "es2022", //Compile target
     "lib": ["es2022"], //Tell TypeScript what built-in types to include
     "jsx": "react-jsx",
+    "sourceMap": true,
 
     /* Module system: */
+    "moduleDetection":"force",
     "esModuleInterop": true,
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
+    "isolatedModules": true,
+    "verbatimModuleSyntax":true,
 
     /* Import options: */
     "allowJs": true, //Allow import .js
