@@ -5,7 +5,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev:pino": "tsx watch --clear-screen=false src/server.ts",
+    "dev": "tsx watch --clear-screen=false src/server.ts",
     "start": "node ./dist/server.js",
     "build": "rimraf ./dist && tsc && tsc-alias",
     "test": "dotenvx run -f .env.test -- vitest run --reporter=verbose",

@@ -1,4 +1,3 @@
-/* eslint-disable sonarjs/no-hardcoded-credentials */
 import app from "@/app.js"
 import { createUser } from "./seeders/user.js"
 import { expect, it, describe, beforeAll, afterAll } from "vitest"
@@ -10,7 +9,6 @@ describe("authentication", () => {
   it("should successfully login with valid credentials", async () => {
     // arrange
     const user = await createUser()
-
     // act
     const loginResponse = await app.request("/auth/login", {
       method: "POST",
@@ -34,9 +32,9 @@ describe("authentication", () => {
       headers: {
         Authorization: `Bearer ${loginBody.token}`,
       },
-    }) as any
+    })
 
-    const profileBody = await profileResponse.json()
+    const profileBody = await profileResponse.json() as any
 
     // assert profile response
     expect(user.name).toBe(profileBody.name)
@@ -51,6 +49,7 @@ describe("authentication", () => {
       },
       body: JSON.stringify({
         email: "invalid@example.com",
+        // eslint-disable-next-line sonarjs/no-hardcoded-passwords
         password: "Password123*",
       }),
     })

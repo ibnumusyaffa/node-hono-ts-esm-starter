@@ -6,7 +6,7 @@ import app from "@/app.js"
 import { createBearerToken } from "./utils/auth.js"
 
 const loginUser = await createUser()
-
+const token = await createBearerToken({ userId: loginUser.id })
 describe("user management", () => {
   describe("create user", () => {
     it("should successfully create user with valid data", async () => {
@@ -19,28 +19,36 @@ describe("user management", () => {
       const response = await app.request("/users", {
         method: "POST",
         headers: {
-          Authorization: await createBearerToken({ userId: loginUser.id }),
+          Authorization: token,
           "Content-Type": "application/json",
         },
         body: JSON.stringify(fake),
       })
 
       expect(response.status).toBe(201)
+
       await expect({ name: fake.name, email: fake.email }).toHaveRowInTable(
         "users"
       )
     })
 
     it("should reject user creation with invalid data", async () => {
+      const fake = {
+        name: "",
+        email: faker.internet.email(),
+        password: "",
+      }
+
       const response = await app.request("/users", {
         method: "POST",
         headers: {
-          Authorization: await createBearerToken({ userId: loginUser.id }),
+          Authorization: token,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ email: "" }),
       })
       expect(response.status).toBe(422)
+      await expect({ name: fake.email }).not.toHaveRowInTable("users")
     })
   })
 
@@ -49,7 +57,7 @@ describe("user management", () => {
       const response = await app.request("/users", {
         method: "GET",
         headers: {
-          Authorization: await createBearerToken({ userId: loginUser.id }),
+          Authorization: token,
         },
       })
 

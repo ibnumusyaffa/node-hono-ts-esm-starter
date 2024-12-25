@@ -13,12 +13,11 @@ export async function seed(db: Kysely<any>): Promise<void> {
   })
 
   for (let i = 0; i < 100; i++) {
-    const user = {
+    users.push({
       name: faker.person.fullName(),
       email: faker.internet.email(),
       password: await bcrypt.hash("Password123*", 10),
-    }
-    users.push(user)
+    })
   }
 
   await db.insertInto("users").values(users).execute()

@@ -7,7 +7,9 @@ import app from "@/app.js"
 vi.mock("@/common/rabbit-mq/publisher.js", () => ({
   Publisher: vi.fn(() => ({
     publish: vi.fn(async (exchange, message) => {
-      console.log(`Mock publish called with exchange: ${exchange}, message: ${JSON.stringify(message)}`)
+      console.log(
+        `Mock publish called with exchange: ${exchange}, message: ${JSON.stringify(message)}`
+      )
     }),
   })),
 }))
@@ -46,6 +48,8 @@ describe("forgot Password", () => {
         password_confirmation: newPassword,
       }),
     })
+    const resetPasswordResponseBody = await resetPasswordResponse.json()
+    console.log(resetPasswordResponseBody)
 
     expect(resetPasswordResponse.status).toBe(200)
 
@@ -63,6 +67,7 @@ describe("forgot Password", () => {
 
     expect(loginResponse.status).toBe(200)
     const loginBody = (await loginResponse.json()) as any
+
     expect(loginBody).toHaveProperty("token")
 
     // Profile
