@@ -6,10 +6,10 @@ import app from "@/app.js"
 // Mock the entire module
 vi.mock("@/common/rabbit-mq/publisher.js", () => ({
   Publisher: vi.fn(() => ({
-    publish: vi.fn(async (exchange, message) => {
-      console.log(
-        `Mock publish called with exchange: ${exchange}, message: ${JSON.stringify(message)}`
-      )
+    publish: vi.fn(() => {
+      // console.log(
+      //   `Mock publish called with exchange: ${exchange}, message: ${JSON.stringify(message)}`
+      // )
     }),
   })),
 }))
@@ -48,8 +48,6 @@ describe("forgot Password", () => {
         password_confirmation: newPassword,
       }),
     })
-    const resetPasswordResponseBody = await resetPasswordResponse.json()
-    console.log(resetPasswordResponseBody)
 
     expect(resetPasswordResponse.status).toBe(200)
 

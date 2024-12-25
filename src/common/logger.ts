@@ -2,6 +2,7 @@ import { pino } from "pino"
 import { type Context } from "hono"
 import { createMiddleware } from "hono/factory"
 import { getContext } from "./context-storage.js"
+import env from "@/config/env.js"
 
 const serializeReq = (c: Context) => ({
   id: c.get("requestId"),
@@ -16,6 +17,7 @@ const serializeRes = (c: Context) => ({
 })
 
 export const logger = pino({
+  enabled: env.LOG,
   redact: {
     paths: ["req.headers"],
     censor: "**censored**",

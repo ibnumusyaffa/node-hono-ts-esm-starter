@@ -7,9 +7,7 @@ export const env = parseEnv(process.env, {
     .enum(["production", "development", "test"])
     .default("development"),
   PORT: port().default(3000),
-  LOG_MODE: z
-    .enum(["production", "development", "test"])
-    .default("development"),
+  LOG: z.boolean().default(false),
 
   APP_NAME: z.string().default("MyApp"),
   APP_KEY: z.string().min(1),
