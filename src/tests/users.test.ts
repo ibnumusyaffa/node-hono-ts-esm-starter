@@ -1,3 +1,4 @@
+/* eslint-disable sonarjs/no-hardcoded-passwords */
 import { faker } from "@faker-js/faker"
 import { createUser } from "./seeders/user.js"
 import { expect, it, describe, afterAll } from "vitest"
@@ -32,23 +33,68 @@ describe("user management", () => {
       )
     })
 
-    it("should reject user creation with invalid data", async () => {
-      const fake = {
-        name: "",
-        email: faker.internet.email(),
-        password: "",
-      }
+    const testCases = [
+      {
+        name: "should fail when email format is invalid",
+        input: {
+          name: "John Doe",
+          email: "invalid-email",
+          password: "123456",
+        },
+        errors: {
+          email: ["Invalid email address"],
+        },
+      },
+      {
+        name: "should fail when email already exists",
+        input: {
+          name: "John Doe",
+          email: loginUser.email,
+          password: "123456",
+        },
+        errors: {
+          email: ["Email already in use"],
+        },
+      },
+      {
+        name: "should fail when password is too short",
+        input: {
+          name: "John Doe",
+          email: "john@example.com",
+          password: "12345",
+        },
+        errors: {
+          password: ["Must be at least 6 characters"],
+        },
+      },
+      {
+        name: "should return multiple errors when multiple fields are required",
+        input: {
+          name: "",
+          email: "",
+          password: "12345",
+        },
+        errors: {
+          name: ["Required"],
+          email: ["Required", "Invalid email address"],
+          password: ["Must be at least 6 characters"],
+        },
+      },
+    ]
 
+    it.each(testCases)("$name", async ({ input, errors }) => {
       const response = await app.request("/users", {
         method: "POST",
         headers: {
           Authorization: token,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email: "" }),
+        body: JSON.stringify(input),
       })
+
+      const body = (await response.json()) as any
       expect(response.status).toBe(422)
-      await expect({ name: fake.email }).not.toHaveRowInTable("users")
+      expect(body.errors).toEqual(errors)
     })
   })
 

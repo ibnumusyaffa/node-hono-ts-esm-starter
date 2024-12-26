@@ -36,16 +36,17 @@ export class UserService {
   async create(userData: { name: string; email: string; password: string }) {
     return this.transactionManager.transaction(async (trx) => {
       const schema = z.object({
-        name: z.string().min(1, "Name is required"),
+        name: z.string().min(1, "Required"),
         email: z
           .string()
+          .min(1, "Required")
           .email("Invalid email address")
           .refine(
             async (email) =>
               !(await this.userRepository.emailExists(trx, email)),
             "Email already in use"
           ),
-        password: z.string().min(6, "Password must be at least 6 characters"),
+        password: z.string().min(6, "Must be at least 6 characters"),
       })
 
       const validatedData = await schema.parseAsync(userData)
