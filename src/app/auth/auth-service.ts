@@ -2,18 +2,14 @@ import { AuthRepository } from "./auth-repository.js"
 import bcrypt from "bcrypt"
 import { randomUUID } from "node:crypto"
 import { createToken } from "@/common/auth.js"
-import env from "@/config/env.js"
 import { TransactionManager } from "@/common/database/index.js"
 import { UnauthorizedError } from "@/common/error.js"
 import { z } from "zod"
-import { Publisher } from "@/common/rabbit-mq/publisher.js"
-import { type ForgotPasswordMessage } from "./auth-worker.js"
 
 export class AuthService {
   constructor(
     private userRepository: AuthRepository,
-    private transactionManager: TransactionManager,
-    private eventPublisher: Publisher
+    private transactionManager: TransactionManager
   ) {}
 
   async login(email: string, password: string) {
@@ -76,12 +72,6 @@ export class AuthService {
 
       const token = randomUUID()
       await this.userRepository.createPasswordReset(trx, email, token)
-
-      this.eventPublisher.publish<ForgotPasswordMessage>("forgot-password", {
-        name: user.name,
-        email: user.email,
-        link: `${env.FRONTEND_URL}/reset-password/${token}?email=${user.email}`,
-      })
 
       return token
     })

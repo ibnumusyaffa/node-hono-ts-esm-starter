@@ -5,14 +5,12 @@ import { TransactionManager } from "@/common/database/index.js"
 import { checkAuth, type Payload } from "@/common/auth.js"
 import { UnauthorizedError } from "@/common/error.js"
 import env from "@/config/env.js"
-import { Publisher } from "@/common/rabbit-mq/publisher.js"
 
 const router = new Hono()
 
 const authRepo = new AuthRepository()
 const transactionManager = new TransactionManager()
-const publisher = new Publisher()
-const authService = new AuthService(authRepo, transactionManager, publisher)
+const authService = new AuthService(authRepo, transactionManager)
 
 router.post("/login", async (c) => {
   const { email, password } = await c.req.json()

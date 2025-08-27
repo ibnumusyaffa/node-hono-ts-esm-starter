@@ -1,18 +1,7 @@
-import { expect, it, describe, vi, afterAll } from "vitest"
+import { expect, it, describe, afterAll } from "vitest"
 import { createUser } from "./seeders/user.js"
 import { db } from "@/common/database/index.js"
 import app from "@/app.js"
-
-// Mock the entire module
-vi.mock("@/common/rabbit-mq/publisher.js", () => ({
-  Publisher: vi.fn(() => ({
-    publish: vi.fn(() => {
-      // console.log(
-      //   `Mock publish called with exchange: ${exchange}, message: ${JSON.stringify(message)}`
-      // )
-    }),
-  })),
-}))
 
 const loginUser = await createUser()
 
