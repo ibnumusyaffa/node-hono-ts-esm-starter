@@ -4,7 +4,8 @@ import { NotFoundError } from "@/common/error.js"
 import { UserService } from "./user-service.js"
 import { UserRepository } from "./user-repository.js"
 import { TransactionManager } from "@/common/database/index.js"
-import { checkAuth } from "@/common/auth.js"
+import { logger } from "@/common/logger.js"
+
 
 const userRepository = new UserRepository()
 const transactionManager = new TransactionManager()
@@ -13,9 +14,10 @@ const userService = new UserService(userRepository, transactionManager)
 
 const router = new Hono()
 
-router.use(checkAuth())
+// router.use(checkAuth())
 
 router.get("/", async (c) => {
+  logger.info("list users")
   const { page, limit, keyword } = c.req.query()
   const result = await userService.list(page, limit, keyword)
   return c.json(result)

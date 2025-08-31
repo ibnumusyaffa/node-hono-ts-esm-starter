@@ -22,27 +22,26 @@ export const env = parseEnv(process.env, {
   DB_PASSWORD: z.string().min(1),
   DB_NAME: z.string().min(1),
 
-  //Redis
-  REDIS_HOST: z.string().min(1),
-  REDIS_PASSWORD: z.string(),
-  REDIS_PORT: port(),
 
-  //rabbitMQ
-  RABBITMQ_HOST: z.string().min(1),
-  RABBITMQ_PORT: port(),
-  RABBITMQ_USERNAME: z.string().min(1),
-  RABBITMQ_PASSWORD: z.string().min(1),
 
-  //Mail
-  MAIL_HOST: z.string().min(1),
-  MAIL_PORT: z.number(),
-  MAIL_USERNAME: z.string().min(1),
-  MAIL_PASSWORD: z.string().min(1),
-  MAIL_FROM_NAME: z.string(),
-  MAIL_FROM_ADDRESS: z.string().min(1),
+
 
   //Test container
   TEST_CONTAINER: z.boolean().default(false),
+
+
+
+  OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: z.string().default("http://localhost:4318/v1/traces"),
+  OTEL_EXPORTER_OTLP_METRICS_ENDPOINT: z.string().default("http://localhost:4318/v1/metrics"),
+  OTEL_EXPORTER_OTLP_LOGS_ENDPOINT: z.string().default("http://localhost:4318/v1/logs"),
+
+  OTEL_SERVICE_NAME: z.string().default("hono-api"),
+  OTEL_SERVICE_VERSION: z.string().default("1.0.0"),
+
+  // OTEL_RESOURCE_ATTRIBUTES="service.name=my-application,service.version=1.2.3,host.name=my-server-01"
+  OTEL_RESOURCE_ATTRIBUTES: z.string().default("service.name=hono-api,service.version=1.0.0"),
+
+  //OTEL service name standard ?
 })
 
 export default env

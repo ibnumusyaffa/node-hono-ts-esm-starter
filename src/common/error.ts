@@ -1,9 +1,10 @@
-import { type StatusCode } from "hono/utils/http-status"
+/* eslint-disable unicorn/no-useless-error-capture-stack-trace */
+import { type ContentfulStatusCode } from "hono/utils/http-status"
 
 export class HTTPError extends Error {
-  statusCode: StatusCode
+  statusCode: ContentfulStatusCode
 
-  constructor(message: string, statusCode: StatusCode) {
+  constructor(message: string, statusCode: ContentfulStatusCode) {
     super(message)
     this.name = this.constructor.name
     this.statusCode = statusCode
