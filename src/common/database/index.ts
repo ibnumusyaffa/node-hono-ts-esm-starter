@@ -5,7 +5,7 @@ import { Kysely, MysqlDialect, Migrator, Transaction } from "kysely"
 import path from "node:path"
 import { TSFileMigrationProvider } from "kysely-ctl"
 import { promisify } from "node:util"
-
+import { logger } from "@/common/logger.js"
 export const pool = createPool({
   database: env.DB_NAME,
   host: env.DB_HOST,
@@ -22,6 +22,22 @@ export const dialect = new MysqlDialect({
 
 export const db = new Kysely<Database>({
   dialect,
+  // log(event) {
+  //   if (event.level === "error") {
+  //     logger.error("Query failed new", {
+  //       "kysely.durationMs": event.queryDurationMillis,
+  //       "kysely.error": event.error,
+  //       "kysely.sql": event.query.sql,
+  //       "kysely.params": event.query.parameters,
+  //     })
+  //   } else {
+  //     logger.info("Query executed new", {
+  //       "kysely.durationMs": event.queryDurationMillis,
+  //       "kysely.sql": event.query.sql,
+  //       "kysely.params": event.query.parameters
+  //     })
+  //   }
+  // },
 })
 
 export async function migrate() {
@@ -53,7 +69,7 @@ export async function truncateAllTables() {
       sql: string | QueryOptions,
       values?: any
     ) => Promise<any>
-    
+
     await query("SET FOREIGN_KEY_CHECKS = 0")
 
     // Get all table names except kysely_migration and kysely_migration_lock

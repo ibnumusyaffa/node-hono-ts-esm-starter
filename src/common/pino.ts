@@ -3,13 +3,19 @@ import { type Context } from "hono"
 import { createMiddleware } from "hono/factory"
 import { trace } from "@opentelemetry/api"
 
-
 const t = transport({
   targets: [
     {
       target: "pino-opentelemetry-transport",
       options: {
         level: "info",
+        loggerName: "hono-api",
+        serviceVersion: "1.0.0",
+        serviceName: "hono-api",
+        resourceAttributes: {
+          "service.name": "hono-api",
+          "service.version": "1.0",
+        },
       },
     },
     //transport to console
@@ -20,7 +26,7 @@ const t = transport({
         singleLine: true,
         translateTime: "SYS:standard",
       },
-    }
+    },
   ],
 })
 
@@ -30,9 +36,9 @@ const serializeRes = (c: Context) => ({
 
 export const logger = pino(
   {
-    messageKey: "message",
     mixin() {
       const span = trace.getActiveSpan()
+      console.log("Active Span:", span)
       if (!span) return {}
       const spanContext = span.spanContext()
       return {

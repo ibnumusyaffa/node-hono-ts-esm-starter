@@ -42,6 +42,7 @@ const resource = resourceFromAttributes({
 const sdk = new NodeSDK({
   resource,
   traceExporter,
+  resourceDetectors:[],
   metricReader: new PeriodicExportingMetricReader({
     exporter: metricExporter,
     exportIntervalMillis: 10_000, // 10 seconds
@@ -53,6 +54,9 @@ const sdk = new NodeSDK({
         enabled: true,
       },
       '@opentelemetry/instrumentation-http': {
+        enabled: true,
+      },
+      '@opentelemetry/instrumentation-winston': {
         enabled: true,
       },
     }),
