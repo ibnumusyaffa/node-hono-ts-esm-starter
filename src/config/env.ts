@@ -38,10 +38,6 @@ export const env = parseEnv(process.env, {
   OTEL_SERVICE_NAME: z.string().default("hono-api"),
   OTEL_SERVICE_VERSION: z.string().default("1.0.0"),
 
-  // OTEL_RESOURCE_ATTRIBUTES="service.name=my-application,service.version=1.2.3,host.name=my-server-01"
-  // OTEL_RESOURCE_ATTRIBUTES: z.string().default("service.name=hono-api,service.version=1.0.0"),
-
-  //OTEL service name standard ?
 })
 
 export default env

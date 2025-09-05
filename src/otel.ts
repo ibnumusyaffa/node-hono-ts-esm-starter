@@ -20,6 +20,8 @@ import { OTLPLogExporter } from "@opentelemetry/exporter-logs-otlp-http"
 
 import { SimpleLogRecordProcessor } from "@opentelemetry/sdk-logs"
 
+
+
 // Configure exporters
 const traceExporter = new OTLPTraceExporter({
   url: `${env.OTEL_EXPORTER_OTLP_TRACES_ENDPOINT}`,
@@ -56,7 +58,7 @@ const sdk = new NodeSDK({
       '@opentelemetry/instrumentation-http': {
         enabled: true,
       },
-      '@opentelemetry/instrumentation-winston': {
+      '@opentelemetry/instrumentation-pino': {
         enabled: true,
       },
     }),

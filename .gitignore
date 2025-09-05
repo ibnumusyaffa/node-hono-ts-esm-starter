@@ -16,3 +16,5 @@ dist
 
 # Except for the .gitkeep file
 !/storage/public/.gitkeep
+
+.trigger
