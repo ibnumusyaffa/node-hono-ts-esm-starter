@@ -5,7 +5,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "otel": "node --env-file .env --import ./dist/otel.js --experimental-loader=@opentelemetry/instrumentation/hook.mjs --watch ./dist/server.js",
+    "otel": "node --env-file .env --import ./dist/otel.js ./dist/server.js",
     "dev": "tsx --env-file .env --watch src/server.ts | pino-pretty",
     "start": "node ./dist/server.js",
     "build": "rimraf ./dist && tsc && tsc-alias",

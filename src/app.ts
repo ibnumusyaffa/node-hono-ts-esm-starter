@@ -15,10 +15,22 @@ import env from "@/config/env.js"
 
 import { tasks } from "@trigger.dev/sdk"
 import type { firstScheduledTask } from "@/trigger/example.js"
+import { trace } from "@opentelemetry/api"
+import { routePath } from "hono/route"
 
 const app = new Hono()
 
 //standard middleware
+
+app.use(async (c, next) => {
+  const result = await next()
+  const span = trace.getActiveSpan()
+  if (span) {
+    span.updateName(`${c.req.method} ${routePath(c)}`)
+  }
+  return result
+})
+
 app.use("*", otel())
 app.use("*", requestId())
 app.use(contextStorage)
@@ -27,10 +39,9 @@ app.use(cors())
 
 //features routes
 app.get("/", async (c) => {
-  await tasks.trigger<typeof firstScheduledTask>(
-    "first-scheduled-task",
-    { seconds: 10 }
-  )
+  await tasks.trigger<typeof firstScheduledTask>("first-scheduled-task", {
+    seconds: 10,
+  })
 
   logger.info("hello from root")
   return c.json({ message: "hello" })

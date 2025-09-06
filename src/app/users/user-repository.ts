@@ -1,6 +1,8 @@
 import { type Database } from "@/common/database/types/index.js"
 import { Transaction } from "kysely"
+import { trace, type Span } from "@opentelemetry/api"
 
+const tracer = trace.getTracer("users-repository")
 export class UserRepository {
   async findAll(
     trx: Transaction<Database>,
@@ -8,21 +10,25 @@ export class UserRepository {
     offset: number,
     keyword?: string
   ) {
-    let query = trx.selectFrom("users")
+    return tracer.startActiveSpan("UserRepository.findAll", async (span:Span) => {
+      span.setAttributes({ limit, offset, keyword: keyword ?? "" })
+      let query = trx.selectFrom("users")
 
-    if (keyword) {
-      query = query.where("name", "like", `%${keyword}%`)
-    }
+      if (keyword) {
+        query = query.where("name", "like", `%${keyword}%`)
+      }
 
-    const [users, countResult] = await Promise.all([
-      query.selectAll().orderBy("id").limit(limit).offset(offset).execute(),
-      query.select((eb) => eb.fn.countAll().as("total")).executeTakeFirst(),
-    ])
+      const [users, countResult] = await Promise.all([
+        query.selectAll().orderBy("id").limit(limit).offset(offset).execute(),
+        query.select((eb) => eb.fn.countAll().as("total")).executeTakeFirst(),
+      ])
 
-    return {
-      users,
-      total: Number(countResult?.total ?? 0),
-    }
+      span.end()
+      return {
+        users,
+        total: Number(countResult?.total ?? 0),
+      }
+    })
   }
 
   async create(
