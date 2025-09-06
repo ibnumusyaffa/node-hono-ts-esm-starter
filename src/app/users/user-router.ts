@@ -18,8 +18,6 @@ const router = new Hono()
 
 router.get("/", async (c) => {
   logger.info("list users")
-
-  console.log("path", c.req.routePath)
   const { page, limit, keyword } = c.req.query()
   const result = await userService.list(page, limit, keyword)
   return c.json(result)

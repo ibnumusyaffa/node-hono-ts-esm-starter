@@ -1,28 +1,46 @@
 import pino from "pino"
 import { type Context } from "hono"
 import { createMiddleware } from "hono/factory"
+import env from "@/config/env.js"
+import { routePath } from "hono/route"
+const serializeReq = (c: Context) => ({
+  method: c.req.method,
+  route: routePath(c),
+  requestId: c.get("requestId"),
+  userAgent: c.req.header("user-agent"),
+  ip: c.req.header("x-forwarded-for") ?? c.req.header("x-real-ip"),
+})
 
 const serializeRes = (c: Context) => ({
   statusCode: c.res.status,
 })
 
-export const logger = pino()
+export const logger = pino({
+  enabled: env.LOG,
+})
 
 export const HttpLog = createMiddleware(async (c, next) => {
   const startTime = Date.now()
   await next()
-  const responseTime = Date.now() - startTime
+  const duration = Date.now() - startTime
+  const res = serializeRes(c)
+  const req = serializeReq(c)
 
   if (c.error) {
-    logger.error(
-      { status: c.res.status, responseTime, params: c.req.param, err: c.error },
-      "request errored pino"
-    )
+    const payload = { res, req, duration, error: c.error.message }
+    const message = `Failed ${res.statusCode} ${req.method} ${req.route} in ${duration}ms`
+
+    if (c.res.status >= 400 && c.res.status < 500) {
+      logger.warn(payload, message)
+      return
+    }
+
+    logger.error(payload, message)
     return
   }
 
   logger.info(
-    { status: c.res.status, responseTime, params: c.req.param },
-    "request completed pino"
+    { res, req, duration },
+    `Completed ${res.statusCode} ${req.method} ${req.route} in ${duration}ms`
   )
 })

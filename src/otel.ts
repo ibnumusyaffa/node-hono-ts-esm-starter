@@ -14,14 +14,16 @@ import {
 import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http"
 import { OTLPMetricExporter } from "@opentelemetry/exporter-metrics-otlp-http"
 import { OTLPLogExporter } from "@opentelemetry/exporter-logs-otlp-http"
-import { SimpleLogRecordProcessor } from "@opentelemetry/sdk-logs"
+import { BatchLogRecordProcessor } from "@opentelemetry/sdk-logs"
 
 import { createAddHookMessageChannel } from "import-in-the-middle"
 import { register } from "node:module"
 
-// Yes, createAddHookMessageChannel is new. See below.
+//ESM support
+//see https://github.com/open-telemetry/opentelemetry-js/issues/4933
 const { registerOptions, waitForAllMessagesAcknowledged } =
   createAddHookMessageChannel()
+
 register("import-in-the-middle/hook.mjs", import.meta.url, registerOptions)
 
 // Configure exporters
@@ -50,7 +52,13 @@ const sdk = new NodeSDK({
     exporter: metricExporter,
     exportIntervalMillis: 10_000, // 10 seconds
   }),
-  logRecordProcessor: new SimpleLogRecordProcessor(logExporter),
+  logRecordProcessor: new BatchLogRecordProcessor(logExporter, {
+    // Optional: customize these based on your needs
+    maxQueueSize: 2048,           // Maximum number of logs to queue
+    scheduledDelayMillis: 1000,   // Export batch every 1 second
+    exportTimeoutMillis: 30_000,   // Timeout for export operations
+    maxExportBatchSize: 512,      // Maximum logs per batch
+  }),
   instrumentations: [
     getNodeAutoInstrumentations({
       "@opentelemetry/instrumentation-mysql2": {
