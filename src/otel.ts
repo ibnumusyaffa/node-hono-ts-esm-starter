@@ -19,8 +19,8 @@ import { BatchLogRecordProcessor } from "@opentelemetry/sdk-logs"
 import { createAddHookMessageChannel } from "import-in-the-middle"
 import { register } from "node:module"
 
-//ESM support
-//see https://github.com/open-telemetry/opentelemetry-js/issues/4933
+
+//ESM hooks: see https://github.com/open-telemetry/opentelemetry-js/issues/4933
 const { registerOptions, waitForAllMessagesAcknowledged } =
   createAddHookMessageChannel()
 
@@ -53,11 +53,10 @@ const sdk = new NodeSDK({
     exportIntervalMillis: 10_000, // 10 seconds
   }),
   logRecordProcessor: new BatchLogRecordProcessor(logExporter, {
-    // Optional: customize these based on your needs
-    maxQueueSize: 2048,           // Maximum number of logs to queue
-    scheduledDelayMillis: 1000,   // Export batch every 1 second
-    exportTimeoutMillis: 30_000,   // Timeout for export operations
-    maxExportBatchSize: 512,      // Maximum logs per batch
+    maxQueueSize: 2048,
+    scheduledDelayMillis: 1000, // Export batch every 1 second
+    exportTimeoutMillis: 30_000,
+    maxExportBatchSize: 512,
   }),
   instrumentations: [
     getNodeAutoInstrumentations({

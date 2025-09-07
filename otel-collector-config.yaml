@@ -1,0 +1,90 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+processors:
+  batch:
+    timeout: 1s
+    send_batch_size: 1024
+    send_batch_max_size: 2048
+
+  resource:
+    attributes:
+      - key: service.name
+        from_attribute: service.name
+        action: upsert
+      - key: service.version
+        from_attribute: service.version
+        action: upsert
+
+exporters:
+  # SigNoz OTLP exporters
+  otlp/signoz-traces:
+    endpoint: ${SIGNOZ_OTLP_ENDPOINT}
+    tls:
+      insecure: ${SIGNOZ_INSECURE}
+    headers:
+      signoz-access-token: ${SIGNOZ_ACCESS_TOKEN}
+
+  otlp/signoz-metrics:
+    endpoint: ${SIGNOZ_OTLP_ENDPOINT}
+    tls:
+      insecure: ${SIGNOZ_INSECURE}
+    headers:
+      signoz-access-token: ${SIGNOZ_ACCESS_TOKEN}
+
+  otlp/signoz-logs:
+    endpoint: ${SIGNOZ_OTLP_ENDPOINT}
+    tls:
+      insecure: ${SIGNOZ_INSECURE}
+    headers:
+      signoz-access-token: ${SIGNOZ_ACCESS_TOKEN}
+
+  # Grafana exporters
+  otlp/grafana-traces:
+    endpoint: ${GRAFANA_OTLP_TRACES_ENDPOINT}
+    tls:
+      insecure: ${GRAFANA_INSECURE}
+    headers:
+      authorization: ${GRAFANA_AUTH_HEADER}
+
+  prometheusremotewrite/grafana:
+    endpoint: ${GRAFANA_PROMETHEUS_ENDPOINT}
+    headers:
+      authorization: ${GRAFANA_AUTH_HEADER}
+    tls:
+      insecure: ${GRAFANA_INSECURE}
+
+  loki/grafana:
+    endpoint: ${GRAFANA_LOKI_ENDPOINT}
+    headers:
+      authorization: ${GRAFANA_AUTH_HEADER}
+    tls:
+      insecure: ${GRAFANA_INSECURE}
+
+  # Optional: logging exporter for debugging
+  logging:
+    loglevel: info
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch, resource]
+      exporters: [otlp/signoz-traces, otlp/grafana-traces]
+
+    metrics:
+      receivers: [otlp]
+      processors: [batch, resource]
+      exporters: [otlp/signoz-metrics, prometheusremotewrite/grafana]
+
+    logs:
+      receivers: [otlp]
+      processors: [batch, resource]
+      exporters: [otlp/signoz-logs, loki/grafana]
+
+  extensions: []

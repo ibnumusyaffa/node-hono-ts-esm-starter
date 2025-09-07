@@ -31,12 +31,25 @@ export const env = parseEnv(process.env, {
 
 
 
+  // OpenTelemetry Configuration
   OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: z.string().default("http://localhost:4318/v1/traces"),
   OTEL_EXPORTER_OTLP_METRICS_ENDPOINT: z.string().default("http://localhost:4318/v1/metrics"),
   OTEL_EXPORTER_OTLP_LOGS_ENDPOINT: z.string().default("http://localhost:4318/v1/logs"),
 
   OTEL_SERVICE_NAME: z.string().default("hono-api"),
   OTEL_SERVICE_VERSION: z.string().default("1.0.0"),
+
+  // SigNoz Configuration
+  SIGNOZ_OTLP_ENDPOINT: z.string().default("http://localhost:4317"),
+  SIGNOZ_ACCESS_TOKEN: z.string().optional(),
+  SIGNOZ_INSECURE: z.boolean().default(true),
+
+  // Grafana Configuration
+  GRAFANA_OTLP_TRACES_ENDPOINT: z.string().optional(),
+  GRAFANA_PROMETHEUS_ENDPOINT: z.string().optional(),
+  GRAFANA_LOKI_ENDPOINT: z.string().optional(),
+  GRAFANA_AUTH_HEADER: z.string().optional(),
+  GRAFANA_INSECURE: z.boolean().default(true),
 
 })
 

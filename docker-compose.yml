@@ -12,6 +12,7 @@ services:
       - rabbitmq
       - redis
       - mysql
+      - otel-collector
 
   forgot-password-worker:
     build: ./
@@ -23,6 +24,27 @@ services:
       - rabbitmq
       - redis
       - mysql
+      - otel-collector
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:latest
+    container_name: otel-collector
+    restart: always
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    volumes:
+      - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml:ro
+    ports:
+      - "4317:4317"   # OTLP gRPC receiver
+      - "4318:4318"   # OTLP HTTP receiver
+    environment:
+      - SIGNOZ_OTLP_ENDPOINT=${SIGNOZ_OTLP_ENDPOINT:-http://signoz:4317}
+      - SIGNOZ_ACCESS_TOKEN=${SIGNOZ_ACCESS_TOKEN:-}
+      - SIGNOZ_INSECURE=${SIGNOZ_INSECURE:-true}
+      - GRAFANA_OTLP_TRACES_ENDPOINT=${GRAFANA_OTLP_TRACES_ENDPOINT:-}
+      - GRAFANA_PROMETHEUS_ENDPOINT=${GRAFANA_PROMETHEUS_ENDPOINT:-}
+      - GRAFANA_LOKI_ENDPOINT=${GRAFANA_LOKI_ENDPOINT:-}
+      - GRAFANA_AUTH_HEADER=${GRAFANA_AUTH_HEADER:-}
+      - GRAFANA_INSECURE=${GRAFANA_INSECURE:-true}
 
   redis:
     image: redis:7.2.5
