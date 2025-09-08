@@ -44,27 +44,6 @@ exporters:
     headers:
       signoz-access-token: ${SIGNOZ_ACCESS_TOKEN}
 
-  # Grafana exporters
-  otlp/grafana-traces:
-    endpoint: ${GRAFANA_OTLP_TRACES_ENDPOINT}
-    tls:
-      insecure: ${GRAFANA_INSECURE}
-    headers:
-      authorization: ${GRAFANA_AUTH_HEADER}
-
-  prometheusremotewrite/grafana:
-    endpoint: ${GRAFANA_PROMETHEUS_ENDPOINT}
-    headers:
-      authorization: ${GRAFANA_AUTH_HEADER}
-    tls:
-      insecure: ${GRAFANA_INSECURE}
-
-  loki/grafana:
-    endpoint: ${GRAFANA_LOKI_ENDPOINT}
-    headers:
-      authorization: ${GRAFANA_AUTH_HEADER}
-    tls:
-      insecure: ${GRAFANA_INSECURE}
 
   # Optional: logging exporter for debugging
   logging:

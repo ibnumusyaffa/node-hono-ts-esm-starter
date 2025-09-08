@@ -1,20 +1,10 @@
-import "dotenv/config"
 import { defineConfig } from "kysely-ctl"
-import { createPool } from "mysql2"
+import { db, migrator } from "./src/common/database"
+
 export default defineConfig({
-  dialect: "mysql2",
-  dialectConfig: {
-    pool: createPool({
-      database: process.env.DB_NAME as string,
-      host: process.env.DB_HOST as string,
-      user: process.env.DB_USER as string,
-      port: Number.parseInt(process.env.DB_PORT as string),
-      password: process.env.DB_PASSWORD as string,
-      connectionLimit: 10,
-    }),
-  },
+  kysely:db,
   migrations: {
-    migrationFolder: "./src/common/database/migrations",
+    migrator,
   },
   plugins: [],
   seeds: {

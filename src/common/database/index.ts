@@ -1,53 +1,30 @@
-import env from "@/config/env.js"
-import { type Database } from "@/common/database/types/index.js"
 import { createPool, type QueryOptions } from "mysql2"
 import { Kysely, MysqlDialect, Migrator, Transaction } from "kysely"
 import path from "node:path"
 import { TSFileMigrationProvider } from "kysely-ctl"
 import { promisify } from "node:util"
-import { logger } from "@/common/logger.js"
-export const pool = createPool({
-  database: env.DB_NAME,
-  host: env.DB_HOST,
-  user: env.DB_USER,
-  port: env.DB_PORT,
-  password: env.DB_PASSWORD,
-  connectionLimit: 10,
-  timezone: "Z",
-})
+import { env } from "../../config/env.js"
+import { type DB } from "./types.js"
+
+export const pool = createPool(env.DATABASE_URL)
 
 export const dialect = new MysqlDialect({
   pool,
 })
 
-export const db = new Kysely<Database>({
+export const db = new Kysely<DB>({
   dialect,
-  // log(event) {
-  //   if (event.level === "error") {
-  //     logger.error("Query failed new", {
-  //       "kysely.durationMs": event.queryDurationMillis,
-  //       "kysely.error": event.error,
-  //       "kysely.sql": event.query.sql,
-  //       "kysely.params": event.query.parameters,
-  //     })
-  //   } else {
-  //     logger.info("Query executed new", {
-  //       "kysely.durationMs": event.queryDurationMillis,
-  //       "kysely.sql": event.query.sql,
-  //       "kysely.params": event.query.parameters
-  //     })
-  //   }
-  // },
+})
+
+export const migrator = new Migrator({
+  db,
+  provider: new TSFileMigrationProvider({
+    migrationFolder: path.join(import.meta.dirname, "./migrations"),
+  }),
+  allowUnorderedMigrations: true,
 })
 
 export async function migrate() {
-  const migrator = new Migrator({
-    db,
-    provider: new TSFileMigrationProvider({
-      migrationFolder: path.join(import.meta.dirname, "./migrations"),
-    }),
-  })
-
   const { error, results } = await migrator.migrateToLatest()
 
   if (results)
@@ -79,7 +56,7 @@ export async function truncateAllTables() {
       FROM INFORMATION_SCHEMA.TABLES
       WHERE TABLE_SCHEMA = ? AND TABLE_NAME NOT IN ('kysely_migration', 'kysely_migration_lock')
     `,
-      [env.DB_NAME]
+      [env.DATABASE_URL.split("/").pop()]
     )
 
     await Promise.all(
@@ -97,7 +74,7 @@ export async function truncateAllTables() {
 }
 
 export class TransactionManager {
-  async transaction<T>(callback: (trx: Transaction<Database>) => Promise<T>) {
+  async transaction<T>(callback: (trx: Transaction<DB>) => Promise<T>) {
     return db.transaction().execute(callback)
   }
 }

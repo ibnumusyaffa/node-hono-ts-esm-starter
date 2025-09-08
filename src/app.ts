@@ -1,5 +1,3 @@
-import "dotenv/config"
-
 import { Hono } from "hono"
 import { logger, HttpLog } from "@/common/logger.js"
 import { cors } from "hono/cors"
@@ -15,6 +13,7 @@ import env from "@/config/env.js"
 
 import { trace } from "@opentelemetry/api"
 import { routePath } from "hono/route"
+import { auth } from "@/lib/auth.js"
 
 const app = new Hono()
 
@@ -51,6 +50,7 @@ app.get("/validation-error", async (c) => {
   return c.json({ message: "hello" })
 })
 
+app.on(["POST", "GET"], "/api/auth/**", (c) => auth.handler(c.req.raw));
 app.route("/users", userRouter)
 app.route("/auth", authRouter)
 

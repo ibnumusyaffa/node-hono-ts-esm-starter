@@ -16,19 +16,10 @@ export const env = parseEnv(process.env, {
   FRONTEND_URL: z.string().default("http://localhost:5000"),
 
   //DB
-  DB_USER: z.string().min(1),
-  DB_HOST: z.string().min(1),
-  DB_PORT: port(),
-  DB_PASSWORD: z.string().min(1),
-  DB_NAME: z.string().min(1),
-
-
-
-
+  DATABASE_URL: z.string().min(1),
 
   //Test container
   TEST_CONTAINER: z.boolean().default(false),
-
 
 
   // OpenTelemetry Configuration
@@ -44,12 +35,7 @@ export const env = parseEnv(process.env, {
   SIGNOZ_ACCESS_TOKEN: z.string().optional(),
   SIGNOZ_INSECURE: z.boolean().default(true),
 
-  // Grafana Configuration
-  GRAFANA_OTLP_TRACES_ENDPOINT: z.string().optional(),
-  GRAFANA_PROMETHEUS_ENDPOINT: z.string().optional(),
-  GRAFANA_LOKI_ENDPOINT: z.string().optional(),
-  GRAFANA_AUTH_HEADER: z.string().optional(),
-  GRAFANA_INSECURE: z.boolean().default(true),
+
 
 })
 
