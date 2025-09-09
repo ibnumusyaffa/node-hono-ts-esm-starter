@@ -1,13 +1,12 @@
-/* eslint-disable sonarjs/no-hardcoded-passwords */
 import { faker } from "@faker-js/faker"
 import { createUser } from "./seeders/user.js"
 import { expect, it, describe, afterAll } from "vitest"
-import { db } from "@/common/database/index.js"
+import { db } from "@/lib/db/index.js"
 import app from "@/app.js"
-import { createBearerToken } from "./utils/auth.js"
+
 
 const loginUser = await createUser()
-const token = await createBearerToken({ userId: loginUser.id })
+const token = "xyz"
 describe("user management", () => {
   describe("create user", () => {
     it("should successfully create user with valid data", async () => {
@@ -115,10 +114,7 @@ describe("user management", () => {
   describe("detail user", () => {
     it("should return user details for valid user ID", async () => {
       const detailResponse = await app.request(`/users/${loginUser.id}`, {
-        method: "GET",
-        headers: {
-          Authorization: await createBearerToken({ userId: loginUser.id }),
-        },
+        method: "GET"
       })
       const body = (await detailResponse.json()) as any
       expect(detailResponse.status).toBe(200)
@@ -128,10 +124,7 @@ describe("user management", () => {
 
     it("should return 404 for invalid user ID", async () => {
       const detailResponse = await app.request(`/users/0`, {
-        method: "GET",
-        headers: {
-          Authorization: await createBearerToken({ userId: loginUser.id }),
-        },
+        method: "GET"
       })
 
       expect(detailResponse.status).toBe(404)

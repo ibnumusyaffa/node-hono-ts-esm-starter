@@ -1,22 +1,21 @@
 import { Hono } from "hono"
-import { logger, HttpLog } from "@/common/logger.js"
 import { cors } from "hono/cors"
 import { requestId } from "hono/request-id"
-import { z } from "zod"
-import { HTTPError, ValidationError } from "@/common/error.js"
-import { contextStorage } from "@/common/context-storage.js"
+import { contextStorage } from 'hono/context-storage'
 import { otel } from "@hono/otel"
+import { routePath } from "hono/route"
+import { z } from "zod"
+import { trace } from "@opentelemetry/api"
 
-import userRouter from "@/app/users/user-router.js"
-import authRouter from "@/app/auth/auth-router.js"
 import env from "@/config/env.js"
 
-import { trace } from "@opentelemetry/api"
-import { routePath } from "hono/route"
+import { logger, HttpLog } from "@/lib/logger.js"
+import { HTTPError } from "@/lib/error.js"
 import { auth } from "@/lib/auth.js"
 
-const app = new Hono()
+import user from "@/app/users/user-router.js"
 
+const app = new Hono();
 
 //rename http instrumentation name to "GET /users" format
 app.use(async (c, next) => {
@@ -30,29 +29,19 @@ app.use(async (c, next) => {
 
 app.use("*", otel())
 app.use("*", requestId())
-app.use(contextStorage)
+app.use(contextStorage())
 app.use(HttpLog)
 app.use(cors())
 
-//features routes
+//auth
+app.on(["POST", "GET"], "/api/auth/**", (c) => auth.handler(c.req.raw));
 app.get("/", async (c) => {
   logger.info("hello from root")
   return c.json({ message: "hello" })
 })
 
-app.get("/error", async (c) => {
-  throw new Error("sample error")
-  return c.json({ message: "hello" })
-})
+app.route("/users",user)
 
-app.get("/validation-error", async (c) => {
-  throw new ValidationError("sample error")
-  return c.json({ message: "hello" })
-})
-
-app.on(["POST", "GET"], "/api/auth/**", (c) => auth.handler(c.req.raw));
-app.route("/users", userRouter)
-app.route("/auth", authRouter)
 
 //error handling
 app.onError((error, c) => {

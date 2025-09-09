@@ -1,6 +1,6 @@
 import { expect, it, describe, afterAll } from "vitest"
 import { createUser } from "./seeders/user.js"
-import { db } from "@/common/database/index.js"
+import { db } from "@/lib/db/index.js"
 import app from "@/app.js"
 
 const loginUser = await createUser()

@@ -1,7 +1,7 @@
 import app from "@/app.js"
 import { createUser } from "./seeders/user.js"
 import { expect, it, describe, beforeAll, afterAll } from "vitest"
-import { db } from "@/common/database/index.js"
+import { db } from "@/lib/db/index.js"
 
 beforeAll(() => {})
 
@@ -49,7 +49,6 @@ describe("authentication", () => {
       },
       body: JSON.stringify({
         email: "invalid@example.com",
-        // eslint-disable-next-line sonarjs/no-hardcoded-passwords
         password: "Password123*",
       }),
     })

@@ -1,5 +1,5 @@
 {
-  "name": "typescript-esm-tsx-starter",
+  "name": "MyApp",
   "type": "module",
   "version": "1.0.0",
   "description": "",
@@ -15,7 +15,8 @@
     "format:all": "prettier --ignore-path .gitignore --write \"**/*.+(js|ts|jsx|tsx)\"",
     "format:check": "prettier --ignore-path .gitignore --check \"**/*.+(js|ts|jsx|tsx)\"",
     "db:migrate": "kysely migrate:latest",
-    "db:codegen": "kysely-codegen --out-file ./src/common/database/types.ts"
+    "db:migrate:auth": "npx @better-auth/cli migrate",
+    "db:codegen": "kysely-codegen --out-file ./src/lib/db/types.ts"
   },
   "keywords": [],
   "author": "",

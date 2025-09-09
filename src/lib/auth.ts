@@ -1,21 +1,24 @@
-import env from "@/config/env.js"
 import { betterAuth } from "better-auth"
 import { createPool } from "mysql2/promise"
-import { parseDatabaseUrl } from "@/common/database/utils.js"
-
-const dbConfig = parseDatabaseUrl(env.DATABASE_URL)
+import { createMiddleware } from "hono/factory"
+import env from "@/config/env.js"
+import { UnauthorizedError } from "@/lib/error.js"
 
 export const auth = betterAuth({
-  database: createPool({
-    database: dbConfig.database,
-    host: dbConfig.host,
-    user: dbConfig.user,
-    port: dbConfig.port,
-    password: dbConfig.password,
-    connectionLimit: 10,
-    timezone: "Z",
-  }),
+  database: createPool(env.DATABASE_URL),
   emailAndPassword: {
     enabled: true,
   },
+})
+
+export const checkAuth = createMiddleware(async (c, next) => {
+  const session = await auth.api.getSession({ headers: c.req.raw.headers })
+
+  if (!session) {
+    throw new UnauthorizedError()
+  }
+
+  c.set("user", session.user)
+  c.set("session", session.session)
+  await next()
 })

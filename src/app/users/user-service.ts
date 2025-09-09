@@ -1,7 +1,7 @@
 import bcrypt from "bcrypt"
 import { UserRepository } from "./user-repository.js"
 import z from "zod"
-import { TransactionManager } from "@/common/database/index.js"
+import { TransactionManager } from "@/lib/db/index.js"
 
 export class UserService {
   constructor(

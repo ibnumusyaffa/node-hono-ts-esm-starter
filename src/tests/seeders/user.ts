@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker"
-import { db } from "@/common/database/index.js"
+import { db } from "@/lib/db/index.js"
 import bcrypt from "bcrypt"
 
 export async function createUser() {

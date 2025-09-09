@@ -1,4 +1,4 @@
-import { migrate, truncateAllTables } from "@/common/database/index.js"
+import { migrate, truncateAllTables } from "@/lib/db/index.js"
 import { type StartedTestContainer } from "testcontainers"
 import { rabbitMQ, mysql } from "@/tests/utils/container.js"
 import env from "@/config/env.js"

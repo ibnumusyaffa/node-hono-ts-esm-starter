@@ -36,6 +36,8 @@ export const env = parseEnv(process.env, {
   SIGNOZ_INSECURE: z.boolean().default(true),
 
 
+  BETTER_AUTH_SECRET: z.string().min(1),
+
 
 })
 

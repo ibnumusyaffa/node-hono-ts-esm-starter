@@ -1,5 +1,5 @@
 import { defineConfig } from "kysely-ctl"
-import { db, migrator } from "./src/common/database"
+import { db, migrator } from "./src/lib/db/index.js"
 
 export default defineConfig({
   kysely:db,
@@ -8,6 +8,6 @@ export default defineConfig({
   },
   plugins: [],
   seeds: {
-    seedFolder: "./src/common/database/seeds",
+    seedFolder: "./src/lib/db/seeds",
   },
 })

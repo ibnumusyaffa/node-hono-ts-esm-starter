@@ -1,5 +1,5 @@
 import { expect } from "vitest"
-import { pool } from "@/common/database/index.js"
+import { pool } from "@/lib/db/index.js"
 const poolPromise = pool.promise()
 
 expect.extend({
