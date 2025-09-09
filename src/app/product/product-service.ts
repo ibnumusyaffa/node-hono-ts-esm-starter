@@ -8,7 +8,7 @@ export async function list(page?: string, limit?: string, keyword?: string) {
     const limitNum = limit ? Number(limit) : 10
     const offset = (pageNum - 1) * limitNum
 
-    const { users, total } = await productRepo.findAll(
+    const { products, total } = await productRepo.findAll(
       trx,
       limitNum,
       offset,
@@ -22,7 +22,7 @@ export async function list(page?: string, limit?: string, keyword?: string) {
       limit: limitNum,
     }
 
-    return { meta, data: users }
+    return { meta, data: products }
   })
 }
 
@@ -39,8 +39,8 @@ export async function create(data: {
   })
 }
 
-export async function detail(userId: number) {
+export async function detail(id: number) {
   return db.transaction().execute(async (trx) => {
-    return productRepo.findById(trx, userId)
+    return productRepo.findById(trx, id)
   })
 }

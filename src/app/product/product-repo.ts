@@ -19,14 +19,14 @@ export async function findAll(
       query = query.where("name", "like", `%${keyword}%`)
     }
 
-    const [users, countResult] = await Promise.all([
+    const [products, countResult] = await Promise.all([
       query.selectAll().orderBy("id").limit(limit).offset(offset).execute(),
       query.select((eb) => eb.fn.countAll().as("total")).executeTakeFirst(),
     ])
 
     span.end()
     return {
-      users,
+      products,
       total: Number(countResult?.total ?? 0),
     }
   })

@@ -22,12 +22,12 @@ r.post("/", async (c) => {
 })
 
 r.get("/:id", async (c) => {
-  const userId = Number.parseInt(c.req.param("id"))
-  const user = await productService.detail(userId)
-  if (!user) {
-    throw new NotFoundError("User not found")
+  const id = Number.parseInt(c.req.param("id"))
+  const product = await productService.detail(id)
+  if (!product) {
+    throw new NotFoundError("Product not found")
   }
-  return c.json(user)
+  return c.json(product)
 })
 
 export default r

@@ -13,7 +13,7 @@ import { logger, HttpLog } from "@/lib/logger.js"
 import { HTTPError } from "@/lib/error.js"
 import { auth } from "@/lib/auth.js"
 
-import user from "@/app/product/product-router.js"
+import product from "@/app/product/product-router.js"
 
 const app = new Hono();
 
@@ -40,7 +40,7 @@ app.get("/", async (c) => {
   return c.json({ message: "hello" })
 })
 
-app.route("/users",user)
+app.route("/products",product)
 
 
 //error handling

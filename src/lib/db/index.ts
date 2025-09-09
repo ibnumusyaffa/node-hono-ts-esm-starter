@@ -3,7 +3,7 @@ import { Kysely, MysqlDialect, Migrator, Transaction } from "kysely"
 import path from "node:path"
 import { TSFileMigrationProvider } from "kysely-ctl"
 import { promisify } from "node:util"
-import { env } from "../../config/env.js"
+import env from "../../config/env.js"
 import { type DB } from "./types.js"
 
 export const pool = createPool(env.DATABASE_URL)
