@@ -13,7 +13,7 @@ import { logger, HttpLog } from "@/lib/logger.js"
 import { HTTPError } from "@/lib/error.js"
 import { auth } from "@/lib/auth.js"
 
-import user from "@/app/users/user-router.js"
+import user from "@/app/product/user-router.js"
 
 const app = new Hono();
 

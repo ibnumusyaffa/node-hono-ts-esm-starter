@@ -1,15 +1,13 @@
 import { Hono } from "hono"
 import { NotFoundError } from "@/lib/error.js"
-import { TransactionManager } from "@/lib/db/index.js"
 import { logger } from "@/lib/logger.js"
 import { checkAuth } from "@/lib/auth.js"
 
-import { UserService } from "./user-service.js"
-import { UserRepository } from "./user-repository.js"
+import * as userService from "./user-service.js"
 
-const userRepository = new UserRepository()
-const transactionManager = new TransactionManager()
-const userService = new UserService(userRepository, transactionManager)
+
+
+
 
 const r = new Hono()
 

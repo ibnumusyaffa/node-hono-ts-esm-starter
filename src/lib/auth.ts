@@ -9,6 +9,11 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
   },
+  advanced: {
+    crossSubDomainCookies: {
+      enabled: true,
+    },
+  },
 })
 
 export const checkAuth = createMiddleware(async (c, next) => {

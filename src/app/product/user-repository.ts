@@ -1,0 +1,63 @@
+import { type DB } from "@/lib/db/types.js"
+import { Transaction } from "kysely"
+import { trace, type Span } from "@opentelemetry/api"
+
+const tracer = trace.getTracer("users-repository")
+
+export async function findAll(
+  trx: Transaction<DB>,
+  limit: number,
+  offset: number,
+  keyword?: string
+) {
+  return tracer.startActiveSpan(
+    "UserRepository.findAll",
+    async (span: Span) => {
+      span.setAttributes({ limit, offset, keyword: keyword ?? "" })
+      let query = trx.selectFrom("users")
+
+      if (keyword) {
+        query = query.where("name", "like", `%${keyword}%`)
+      }
+
+      const [users, countResult] = await Promise.all([
+        query.selectAll().orderBy("id").limit(limit).offset(offset).execute(),
+        query.select((eb) => eb.fn.countAll().as("total")).executeTakeFirst(),
+      ])
+
+      span.end()
+      return {
+        users,
+        total: Number(countResult?.total ?? 0),
+      }
+    }
+  )
+}
+
+export async function create(
+  trx: Transaction<DB>,
+  userData: { name: string; email: string; password: string }
+) {
+  return trx.insertInto("users").values(userData).execute()
+}
+
+export async function findById(trx: Transaction<DB>, userId: number) {
+  return trx
+    .selectFrom("users")
+    .where("id", "=", userId)
+    .selectAll()
+    .executeTakeFirst()
+}
+
+export async function emailExists(
+  trx: Transaction<DB>,
+  email: string
+): Promise<boolean> {
+  const result = await trx
+    .selectFrom("users")
+    .where("email", "=", email)
+    .select("id")
+    .executeTakeFirst()
+
+  return !!result
+}
