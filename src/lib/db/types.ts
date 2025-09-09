@@ -25,10 +25,11 @@ export interface Account {
   userId: string;
 }
 
-export interface PasswordResets {
+export interface Product {
   created_at: Generated<Date>;
-  email: string;
-  token: string;
+  id: Generated<number>;
+  name: string;
+  updated_at: Generated<Date>;
 }
 
 export interface Session {
@@ -52,15 +53,6 @@ export interface User {
   updatedAt: Generated<Date>;
 }
 
-export interface Users {
-  created_at: Generated<Date>;
-  email: string;
-  id: Generated<number>;
-  name: string;
-  password: string;
-  updated_at: Generated<Date>;
-}
-
 export interface Verification {
   createdAt: Generated<Date>;
   expiresAt: Date;
@@ -72,9 +64,8 @@ export interface Verification {
 
 export interface DB {
   account: Account;
-  password_resets: PasswordResets;
+  product: Product;
   session: Session;
   user: User;
-  users: Users;
   verification: Verification;
 }

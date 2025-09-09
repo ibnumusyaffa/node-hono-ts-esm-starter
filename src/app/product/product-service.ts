@@ -1,5 +1,4 @@
-import bcrypt from "bcrypt"
-import * as userRepo from "./user-repository.js"
+import * as productRepo from "./product-repo.js"
 import z from "zod"
 import { db } from "@/lib/db/index.js"
 
@@ -9,7 +8,7 @@ export async function list(page?: string, limit?: string, keyword?: string) {
     const limitNum = limit ? Number(limit) : 10
     const offset = (pageNum - 1) * limitNum
 
-    const { users, total } = await userRepo.findAll(
+    const { users, total } = await productRepo.findAll(
       trx,
       limitNum,
       offset,
@@ -27,36 +26,21 @@ export async function list(page?: string, limit?: string, keyword?: string) {
   })
 }
 
-export async function create(userData: {
+export async function create(data: {
   name: string
-  email: string
-  password: string
 }) {
   return db.transaction().execute(async (trx) => {
     const schema = z.object({
       name: z.string().min(1, "Required"),
-      email: z
-        .string()
-        .min(1, "Required")
-        .email("Invalid email address")
-        .refine(
-          async (email) => !(await userRepo.emailExists(trx, email)),
-          "Email already in use"
-        ),
-      password: z.string().min(6, "Must be at least 6 characters"),
     })
 
-    const validatedData = await schema.parseAsync(userData)
-    const hashedPassword = await bcrypt.hash(validatedData.password, 10)
-    return userRepo.create(trx, {
-      ...validatedData,
-      password: hashedPassword,
-    })
+    const validatedData = await schema.parseAsync(data)
+    return productRepo.create(trx, validatedData)
   })
 }
 
 export async function detail(userId: number) {
   return db.transaction().execute(async (trx) => {
-    return userRepo.findById(trx, userId)
+    return productRepo.findById(trx, userId)
   })
 }
