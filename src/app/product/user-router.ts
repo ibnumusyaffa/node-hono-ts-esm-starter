@@ -1,20 +1,14 @@
 import { Hono } from "hono"
 import { NotFoundError } from "@/lib/error.js"
-import { logger } from "@/lib/logger.js"
 import { checkAuth } from "@/lib/auth.js"
 
 import * as userService from "./user-service.js"
-
-
-
-
 
 const r = new Hono()
 
 r.use(checkAuth)
 
 r.get("/", async (c) => {
-  logger.info("list users")
   const { page, limit, keyword } = c.req.query()
   const result = await userService.list(page, limit, keyword)
   return c.json(result)

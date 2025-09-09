@@ -1,11 +1,10 @@
-import { type DB } from "@/lib/db/types.js"
-import { Transaction } from "kysely"
+import { type Trx } from "@/lib/db/index.js"
 import { trace, type Span } from "@opentelemetry/api"
 
 const tracer = trace.getTracer("users-repository")
 
 export async function findAll(
-  trx: Transaction<DB>,
+  trx: Trx,
   limit: number,
   offset: number,
   keyword?: string
@@ -35,13 +34,13 @@ export async function findAll(
 }
 
 export async function create(
-  trx: Transaction<DB>,
+  trx: Trx,
   userData: { name: string; email: string; password: string }
 ) {
   return trx.insertInto("users").values(userData).execute()
 }
 
-export async function findById(trx: Transaction<DB>, userId: number) {
+export async function findById(trx: Trx, userId: number) {
   return trx
     .selectFrom("users")
     .where("id", "=", userId)
@@ -49,10 +48,7 @@ export async function findById(trx: Transaction<DB>, userId: number) {
     .executeTakeFirst()
 }
 
-export async function emailExists(
-  trx: Transaction<DB>,
-  email: string
-): Promise<boolean> {
+export async function emailExists(trx: Trx, email: string): Promise<boolean> {
   const result = await trx
     .selectFrom("users")
     .where("email", "=", email)

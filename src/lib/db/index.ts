@@ -24,6 +24,8 @@ export const migrator = new Migrator({
   allowUnorderedMigrations: true,
 })
 
+export type Trx = Transaction<DB>
+
 export async function migrate() {
   const { error, results } = await migrator.migrateToLatest()
 
@@ -73,8 +75,3 @@ export async function truncateAllTables() {
   }
 }
 
-export class TransactionManager {
-  async transaction<T>(callback: (trx: Transaction<DB>) => Promise<T>) {
-    return db.transaction().execute(callback)
-  }
-}
