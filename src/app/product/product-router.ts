@@ -1,10 +1,15 @@
 import { Hono } from "hono"
 import { NotFoundError } from "@/lib/error.js"
 import { checkAuth } from "@/lib/auth.js"
-
+import { zValidator } from "@hono/zod-validator"
+import { z } from "zod"
 import * as productService from "./product-service.js"
 
 const r = new Hono()
+
+const productSchema = z.object({
+  name: z.string(),
+})
 
 r.use(checkAuth)
 
@@ -14,10 +19,9 @@ r.get("/", async (c) => {
   return c.json(result)
 })
 
-r.post("/", async (c) => {
-  const body = await c.req.json()
-  const { name } = body
-  await productService.create({ name })
+r.post("/", zValidator("json", productSchema), async (c) => {
+  const body = c.req.valid("json")
+  await productService.create(body)
   return c.json({ message: "Successfully create data" }, 201)
 })
 

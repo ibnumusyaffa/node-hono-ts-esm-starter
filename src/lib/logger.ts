@@ -1,8 +1,8 @@
 import pino from "pino"
 import { type Context } from "hono"
 import { createMiddleware } from "hono/factory"
-import env from "@/config/env.js"
 import { routePath } from "hono/route"
+
 const serializeReq = (c: Context) => ({
   method: c.req.method,
   route: routePath(c),
@@ -15,9 +15,7 @@ const serializeRes = (c: Context) => ({
   statusCode: c.res.status,
 })
 
-export const logger = pino({
-  enabled: env.LOG,
-})
+export const logger = pino()
 
 export const HttpLog = createMiddleware(async (c, next) => {
   const startTime = Date.now()

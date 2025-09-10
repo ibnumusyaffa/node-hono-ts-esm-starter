@@ -19,9 +19,18 @@ const env = createEnv({
     FRONTEND_URL: z.string().default("http://localhost:5000"),
 
     DATABASE_URL: z.string().min(1),
+    DATABASE_CONNECTION_LIMIT: z.coerce.number().default(10),
+    DATABASE_ACQUIRE_TIMEOUT: z.coerce.number().default(60000),
+    DATABASE_TIMEOUT: z.coerce.number().default(60000),
 
     BETTER_AUTH_SECRET: z.string().min(1),
     BETTER_AUTH_URL: z.string().default("http://localhost:4000"),
+
+    TEST_CONTAINER: z
+      .string()
+      .refine((s) => s === "true" || s === "false")
+      .transform((s) => s === "true")
+      .default(false),
 
     // OpenTelemetry Configuration
     OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: z
@@ -36,7 +45,6 @@ const env = createEnv({
 
     OTEL_SERVICE_NAME: z.string().default("hono-api"),
     OTEL_SERVICE_VERSION: z.string().default("1.0.0"),
-
   },
   runtimeEnv: process.env,
   emptyStringAsUndefined: true,

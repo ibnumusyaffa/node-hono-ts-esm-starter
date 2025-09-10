@@ -1,4 +1,3 @@
-/* eslint-disable sonarjs/slow-regex */
 import { GenericContainer, Wait } from "testcontainers"
 
 export async function rabbitMQ() {
