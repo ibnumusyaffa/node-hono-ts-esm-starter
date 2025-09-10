@@ -1,6 +1,8 @@
 import * as productRepo from "./product-repo.js"
 import z from "zod"
 import { db } from "@/lib/db/index.js"
+import { getContext } from "@/lib/context.js"
+import invariant from "tiny-invariant"
 
 export async function list(page?: string, limit?: string, keyword?: string) {
   return db.transaction().execute(async (trx) => {
@@ -26,13 +28,16 @@ export async function list(page?: string, limit?: string, keyword?: string) {
   })
 }
 
-export async function create(data: {
-  name: string
-}) {
+export async function create(data: { name: string }) {
   return db.transaction().execute(async (trx) => {
     const schema = z.object({
       name: z.string().min(1, "Required"),
     })
+
+    const c = getContext()
+    const user = c.get("user")
+    invariant(user, "User not found")
+
 
     const validatedData = await schema.parseAsync(data)
     return productRepo.create(trx, validatedData)

@@ -1,19 +1,22 @@
 import { expect } from "vitest"
-import { pool } from "@/lib/db/index.js"
-const poolPromise = pool.promise()
+import { db } from "@/lib/db/index.js"
+
 
 expect.extend({
   async toHaveRowInTable(data: Record<string, any>, tableName: string) {
     try {
-      let query = `SELECT COUNT(*) AS count FROM \`${tableName}\` WHERE `
-      const conditions = Object.keys(data)
-        .map((key) => `\`${key}\` = ?`)
-        .join(" AND ")
-      query += conditions + ";"
+      // Build the WHERE conditions dynamically
+      let query = db
+        .selectFrom(tableName as any)
+        .select(({ fn }) => fn.countAll().as("count"))
 
-      const values = Object.values(data)
-      const [rows] = await poolPromise.query(query, values)
-      const hasRow = rows[0].count > 0
+      // Add WHERE conditions for each key-value pair
+      for (const [key, value] of Object.entries(data)) {
+        query = query.where(key, "=", value)
+      }
+
+      const result = await query.executeTakeFirst()
+      const hasRow = Number(result?.count) > 0
 
       return {
         message: () =>

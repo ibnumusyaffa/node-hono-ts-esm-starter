@@ -5,6 +5,9 @@ import env from "@/config/env.js"
 import { UnauthorizedError } from "@/lib/error.js"
 
 export const auth = betterAuth({
+  logger: {
+    disabled: env.NODE_ENV === "test",
+  },
   database: createPool(env.DATABASE_URL),
   emailAndPassword: {
     enabled: true,

@@ -5,27 +5,30 @@ import { zValidator } from "@hono/zod-validator"
 import { z } from "zod"
 import * as productService from "./product-service.js"
 
-const r = new Hono()
+
+const router = new Hono()
+
+router.use(checkAuth)
+
 
 const productSchema = z.object({
   name: z.string(),
 })
 
-r.use(checkAuth)
 
-r.get("/", async (c) => {
+router.get("/", async (c) => {
   const { page, limit, keyword } = c.req.query()
   const result = await productService.list(page, limit, keyword)
   return c.json(result)
 })
 
-r.post("/", zValidator("json", productSchema), async (c) => {
+router.post("/", zValidator("json", productSchema), async (c) => {
   const body = c.req.valid("json")
   await productService.create(body)
   return c.json({ message: "Successfully create data" }, 201)
 })
 
-r.get("/:id", async (c) => {
+router.get("/:id", async (c) => {
   const id = Number.parseInt(c.req.param("id"))
   const product = await productService.detail(id)
   if (!product) {
@@ -34,4 +37,7 @@ r.get("/:id", async (c) => {
   return c.json(product)
 })
 
-export default r
+
+
+
+export default router

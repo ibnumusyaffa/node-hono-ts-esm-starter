@@ -40,7 +40,7 @@ app.get("/", async (c) => {
   return c.json({ message: "hello" })
 })
 
-app.route("/products",product)
+app.route("/product",product)
 
 
 //error handling

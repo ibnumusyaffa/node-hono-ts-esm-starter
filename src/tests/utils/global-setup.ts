@@ -3,6 +3,8 @@ import { type StartedTestContainer } from "testcontainers"
 import { rabbitMQ, mysql } from "@/tests/utils/container.js"
 import env from "@/config/env.js"
 import { sql } from "kysely"
+import { getMigrations } from "better-auth/db";
+import { auth } from "@/lib/auth.js"
 
 let containers: StartedTestContainer[] = []
 
@@ -23,6 +25,10 @@ export async function setup() {
     }
   }
 
+  //better-auth migrations
+  const { runMigrations } = await getMigrations(auth.options);
+	await runMigrations();
+
   const timeTaken = performance.now() - startTime
   console.info(`setup took ${timeTaken.toFixed(0)} ms.`)
 }
@@ -33,12 +39,11 @@ export async function teardown() {
   for (const item of containers) {
     item.stop()
   }
-
   // eslint-disable-next-line unicorn/no-process-exit
   process.exit(0)
 }
 
-export async function truncateAllTables() {
+async function truncateAllTables() {
   try {
     // Disable foreign key checks
     await sql`SET FOREIGN_KEY_CHECKS = 0`.execute(db)
@@ -63,7 +68,7 @@ export async function truncateAllTables() {
     // Re-enable foreign key checks
     await sql`SET FOREIGN_KEY_CHECKS = 1`.execute(db)
 
-    console.log(`All tables truncated successfully: ${tableNames.join(", ")}`)
+    console.log(`${tableNames.length} tables truncated successfully`)
   } catch (error) {
     console.error("Error truncating tables:", error)
     throw error

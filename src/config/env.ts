@@ -19,9 +19,6 @@ const env = createEnv({
     FRONTEND_URL: z.string().default("http://localhost:5000"),
 
     DATABASE_URL: z.string().min(1),
-    DATABASE_CONNECTION_LIMIT: z.coerce.number().default(10),
-    DATABASE_ACQUIRE_TIMEOUT: z.coerce.number().default(60000),
-    DATABASE_TIMEOUT: z.coerce.number().default(60000),
 
     BETTER_AUTH_SECRET: z.string().min(1),
     BETTER_AUTH_URL: z.string().default("http://localhost:4000"),
