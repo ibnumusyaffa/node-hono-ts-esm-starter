@@ -1,7 +1,7 @@
 import * as productRepo from "./product-repo.js"
 import z from "zod"
 import { db } from "@/lib/db/index.js"
-import { getContext } from "@/lib/context.js"
+
 
 export async function list(page?: string, limit?: string, keyword?: string) {
   return db.transaction().execute(async (trx) => {
@@ -15,13 +15,6 @@ export async function list(page?: string, limit?: string, keyword?: string) {
       offset,
       keyword
     )
-
-    const c = getContext()
-
-    const user = c.get("session")
-
-    console.log(user)
-
     const meta = {
       total,
       totalPages: Math.ceil(total / limitNum),

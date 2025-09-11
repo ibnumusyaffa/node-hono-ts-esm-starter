@@ -11,7 +11,10 @@ async function getCookie(data: { email: string; password: string }) {
   return cookie?.split(";")[0] as string
 }
 
-export const withAuthFetch =
+/*
+create a fetch function that automatically includes the authentication cookie
+*/
+export const createFetch =
   async (data: {
     email: string
     password: string

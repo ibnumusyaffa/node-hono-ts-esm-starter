@@ -1,12 +1,12 @@
 import { it, describe, expect } from "vitest"
-import { withAuthFetch } from "./utils/auth.js"
+import { createFetch } from "./utils/auth.js"
 import { createUser } from "./seeders/user.js"
 
 describe("product", () => {
   it("should successfully create product with valid data", async () => {
     const user = await createUser()
 
-    const fetch = await withAuthFetch({
+    const fetch = await createFetch({
       email: user.email,
       password: user.password,
     })
@@ -23,7 +23,7 @@ describe("product", () => {
   it("should fail to create product with invalid data", async () => {
     const user = await createUser()
 
-    const fetch = await withAuthFetch({
+    const fetch = await createFetch({
       email: user.email,
       password: user.password,
     })

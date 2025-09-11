@@ -1,5 +1,5 @@
 import { it, describe, expect } from "vitest"
-import { withAuthFetch } from "./utils/auth.js"
+import { createFetch } from "./utils/auth.js"
 import { createUser } from "./seeders/user.js"
 import app from "@/app.js"
 describe("auth", () => {
@@ -15,7 +15,7 @@ describe("auth", () => {
   it("should successfully fetch protected route with auth", async () => {
     const user = await createUser()
 
-    const fetch = await withAuthFetch({
+    const fetch = await createFetch({
       email: user.email,
       password: user.password,
     })
