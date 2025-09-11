@@ -46,5 +46,5 @@ export async function teardown() {
 
 
 export async function truncateAllTables(): Promise<void> {
-	await sql`CALL TruncateAllTables()`.execute(db)
+	await sql`CALL truncate_all_tables_proc();`.execute(db)
 }
