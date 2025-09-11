@@ -5,10 +5,11 @@ import { TSFileMigrationProvider } from "kysely-ctl"
 import env from "../../config/env.js"
 import { type DB } from "./types.js"
 
+const pool = createPool(env.DATABASE_URL)
+
 export const db = new Kysely<DB>({
-  dialect: new MysqlDialect({
-    pool: createPool(env.DATABASE_URL),
-  }),
+  // @ts-expect-error - TODO: fix this
+  dialect: new MysqlDialect({ pool }),
 })
 
 export const migrator = new Migrator({

@@ -4,7 +4,6 @@
     "skipLibCheck": true, //Skip node_modules type checking
     "target": "es2022", //Compile target
     "lib": ["es2022"], //Tell TypeScript what built-in types to include
-    "jsx": "react-jsx",
     "sourceMap": true,
 
     /* Module system: */
@@ -34,8 +33,6 @@
     }
   },
   "include": [
-    "src/**/*",
-    "src/types/index.d.ts",
-    "src/types/vitest.d.ts"
+    "src/**/*"
   ]
 }
