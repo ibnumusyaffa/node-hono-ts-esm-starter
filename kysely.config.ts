@@ -4,6 +4,7 @@ import { db, migrator } from "./src/lib/db/index.js"
 export default defineConfig({
   kysely:db,
   migrations: {
+    migrationFolder: "./src/lib/db/migrations",
     migrator,
   },
   plugins: [],

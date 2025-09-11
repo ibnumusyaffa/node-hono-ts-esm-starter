@@ -28,6 +28,7 @@ export async function list(page?: string, limit?: string, keyword?: string) {
 
 export async function create(data: { name: string }) {
   return db.transaction().execute(async (trx) => {
+
     const schema = z.object({
       name: z
         .string()
@@ -36,6 +37,7 @@ export async function create(data: { name: string }) {
     })
 
     const validatedData = await schema.parseAsync(data)
+    console.log(validatedData)
 
     return productRepo.create(trx, validatedData)
   })

@@ -43,34 +43,8 @@ export async function teardown() {
   process.exit(0)
 }
 
-async function truncateAllTables() {
-  try {
-    // Disable foreign key checks
-    await sql`SET FOREIGN_KEY_CHECKS = 0`.execute(db)
 
-    // Get all table names except kysely migration tables
-    const result = await sql<{ TABLE_NAME: string }>`
-      SELECT TABLE_NAME
-      FROM INFORMATION_SCHEMA.TABLES
-      WHERE TABLE_SCHEMA = DATABASE()
-        AND TABLE_NAME NOT IN ('kysely_migration', 'kysely_migration_lock')
-    `.execute(db)
 
-    const tableNames = result.rows.map((row) => row.TABLE_NAME)
-
-    // Truncate all application tables
-    await Promise.all(
-      tableNames.map((tableName) =>
-        sql`TRUNCATE TABLE ${sql.table(tableName)}`.execute(db)
-      )
-    )
-
-    // Re-enable foreign key checks
-    await sql`SET FOREIGN_KEY_CHECKS = 1`.execute(db)
-
-    console.log(`${tableNames.length} tables truncated successfully`)
-  } catch (error) {
-    console.error("Error truncating tables:", error)
-    throw error
-  }
+export async function truncateAllTables(): Promise<void> {
+	await sql`CALL TruncateAllTables()`.execute(db)
 }
