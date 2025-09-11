@@ -1,28 +1,29 @@
-import { it, describe, afterAll, expect } from "vitest"
+import { it, describe, expect } from "vitest"
 import { withAuthFetch } from "./utils/auth.js"
 import { createUser } from "./seeders/user.js"
-
+import app from "@/app.js"
 describe("auth", () => {
-  describe("sign up", () => {
-    it("should successfully sign up with valid data", async () => {
-      const user = await createUser()
+  it("should fail to fetch protected route without auth", async () => {
 
-      const fetch = await withAuthFetch({
-        email: user.email,
-        password: user.password,
-      })
-      const res = await fetch("/product", {
-        method: "GET",
-      })
-
-      expect(res.status).toBe(200)
-      expect({
-        email: user.email,
-      }).toHaveRowInTable("user")
+    const res = await app.request("/product", {
+      method: "GET",
     })
-  })
-})
 
-afterAll(async () => {
-  // await db.destroy()
+    expect(res.status).toBe(401)
+  })
+
+  it("should successfully fetch protected route with auth", async () => {
+    const user = await createUser()
+
+    const fetch = await withAuthFetch({
+      email: user.email,
+      password: user.password,
+    })
+
+    const res = await fetch("/product", {
+      method: "GET",
+    })
+
+    expect(res.status).toBe(200)
+  })
 })
