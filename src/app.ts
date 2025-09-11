@@ -1,7 +1,7 @@
 import { Hono } from "hono"
 import { cors } from "hono/cors"
 import { requestId } from "hono/request-id"
-import { contextStorage } from 'hono/context-storage'
+import { contextStorage } from "hono/context-storage"
 import { otel } from "@hono/otel"
 import { routePath } from "hono/route"
 import { z } from "zod"
@@ -10,12 +10,12 @@ import { trace } from "@opentelemetry/api"
 import env from "@/config/env.js"
 
 import { logger, HttpLog } from "@/lib/logger.js"
-import { HTTPError } from "@/lib/error.js"
+import { formatZodErrors, HTTPError } from "@/lib/error.js"
 import { auth } from "@/lib/auth.js"
 
 import product from "@/app/product/product-router.js"
 
-const app = new Hono();
+const app = new Hono()
 
 //rename http instrumentation name to "GET /users" format
 app.use(async (c, next) => {
@@ -34,19 +34,21 @@ app.use(HttpLog)
 app.use(cors())
 
 //auth
-app.on(["POST", "GET"], "/api/auth/**", (c) => auth.handler(c.req.raw));
+app.on(["POST", "GET"], "/api/auth/**", (c) => auth.handler(c.req.raw))
 app.get("/", async (c) => {
   logger.info("hello from root")
   return c.json({ message: "hello" })
 })
 
-app.route("/product",product)
-
+app.route("/product", product)
 
 //error handling
 app.onError((error, c) => {
   if (error instanceof z.ZodError) {
-    return c.json({ errors: error.flatten().fieldErrors }, 422)
+    return c.json(
+      { message: "Validation error", errors: formatZodErrors(error) },
+      422
+    )
   }
 
   if (error instanceof HTTPError) {
