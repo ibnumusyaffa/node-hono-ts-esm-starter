@@ -37,7 +37,6 @@ export async function create(data: { name: string }) {
     })
 
     const validatedData = await schema.parseAsync(data)
-    console.log(validatedData)
 
     return productRepo.create(trx, validatedData)
   })

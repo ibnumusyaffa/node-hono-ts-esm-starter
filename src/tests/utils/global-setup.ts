@@ -1,3 +1,4 @@
+/* eslint-disable unicorn/no-process-exit */
 import { migrator, db } from "@/lib/db/index.js"
 import { type StartedTestContainer } from "testcontainers"
 import { rabbitMQ, mysql } from "@/tests/utils/container.js"
@@ -34,12 +35,15 @@ export async function setup() {
 }
 
 export async function teardown() {
+  const startTime = performance.now()
   await truncateAllTables()
 
   for (const item of containers) {
     item.stop()
   }
-  // eslint-disable-next-line unicorn/no-process-exit
+
+  const timeTaken = performance.now() - startTime
+  console.info(`teardown took ${timeTaken.toFixed(0)} ms.`)
   process.exit(0)
 }
 
