@@ -1,5 +1,8 @@
 import { createEnv } from "@t3-oss/env-core"
 import { z } from "zod"
+import { config } from "dotenv"
+
+config({ path: ".env" })
 
 const env = createEnv({
   server: {

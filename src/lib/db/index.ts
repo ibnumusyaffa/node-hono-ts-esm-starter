@@ -5,7 +5,7 @@ import { TSFileMigrationProvider } from "kysely-ctl"
 import env from "../../config/env.js"
 import { type DB } from "./types.js"
 
-export const pool = createPool(env.DATABASE_URL)
+const pool = createPool(env.DATABASE_URL)
 
 export const db = new Kysely<DB>({
   // @ts-expect-error - TODO: fix this

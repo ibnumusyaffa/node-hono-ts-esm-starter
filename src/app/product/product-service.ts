@@ -1,6 +1,7 @@
 import * as productRepo from "./product-repo.js"
 import z from "zod"
 import { db } from "@/lib/db/index.js"
+import { getContext } from "@/lib/context.js"
 
 
 export async function list(page?: string, limit?: string, keyword?: string) {
@@ -22,6 +23,10 @@ export async function list(page?: string, limit?: string, keyword?: string) {
       limit: limitNum,
     }
 
+    const context = getContext()
+    console.log(context.var)
+
+    console.log(products)
     return { meta, data: products }
   })
 }
@@ -35,6 +40,9 @@ export async function create(data: { name: string }) {
         .min(1, { message: "Required" })
         .refine((val) => val.length >= 3, { message: "Minimum 3 characters" }),
     })
+
+    const context = getContext()
+    console.log(context.var)
 
     const validatedData = await schema.parseAsync(data)
 

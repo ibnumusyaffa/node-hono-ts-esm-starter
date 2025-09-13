@@ -4,7 +4,7 @@ import { type StartedTestContainer } from "testcontainers"
 import { rabbitMQ, mysql } from "@/tests/utils/container.js"
 import env from "@/config/env.js"
 import { sql } from "kysely"
-import { getMigrations } from "better-auth/db";
+import { getMigrations } from "better-auth/db"
 import { auth } from "@/lib/auth.js"
 
 let containers: StartedTestContainer[] = []
@@ -27,8 +27,8 @@ export async function setup() {
   }
 
   //better-auth migrations
-  const { runMigrations } = await getMigrations(auth.options);
-	await runMigrations();
+  const { runMigrations } = await getMigrations(auth.options)
+  await runMigrations()
 
   const timeTaken = performance.now() - startTime
   console.info(`setup took ${timeTaken.toFixed(0)} ms.`)
@@ -47,8 +47,24 @@ export async function teardown() {
   process.exit(0)
 }
 
-
-
 export async function truncateAllTables(): Promise<void> {
-	await sql`CALL truncate_all_tables_proc();`.execute(db)
+  await sql`SET SESSION FOREIGN_KEY_CHECKS = 0`.execute(db)
+
+  try {
+    const tables = await sql<{ TABLE_NAME: string }>`
+      SELECT TABLE_NAME FROM information_schema.tables
+      WHERE table_schema = DATABASE()
+        AND table_name NOT IN ('kysely_migration', 'kysely_migration_lock')
+        AND table_type = 'BASE TABLE'
+    `.execute(db)
+
+    // These TRUNCATE operations run in parallel
+    await Promise.all(
+      tables.rows.map((row) =>
+        sql`TRUNCATE TABLE ${sql.table(row.TABLE_NAME)}`.execute(db)
+      )
+    )
+  } finally {
+    await sql`SET SESSION FOREIGN_KEY_CHECKS = 1`.execute(db)
+  }
 }
