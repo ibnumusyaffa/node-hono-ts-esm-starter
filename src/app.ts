@@ -1,7 +1,6 @@
 import { Hono } from "hono"
 import { cors } from "hono/cors"
 import { requestId } from "hono/request-id"
-import { contextStorage } from "hono/context-storage"
 import { otel } from "@hono/otel"
 import { routePath } from "hono/route"
 import { z } from "zod"
@@ -29,7 +28,6 @@ app.use(async (c, next) => {
 
 app.use("*", otel())
 app.use("*", requestId())
-app.use(contextStorage())
 app.use(HttpLog)
 app.use(cors())
 

@@ -1,10 +1,18 @@
 import * as productRepo from "./product-repo.js"
 import z from "zod"
 import { db } from "@/lib/db/index.js"
-import { getContext } from "@/lib/context.js"
 
-
-export async function list(page?: string, limit?: string, keyword?: string) {
+export async function list(
+  {
+    page,
+    limit,
+    keyword,
+  }: {
+    page?: string
+    limit?: string
+    keyword?: string
+  }
+) {
   return db.transaction().execute(async (trx) => {
     const pageNum = page ? Number(page) : 1
     const limitNum = limit ? Number(limit) : 10
@@ -22,27 +30,18 @@ export async function list(page?: string, limit?: string, keyword?: string) {
       page: pageNum,
       limit: limitNum,
     }
-
-    const context = getContext()
-    console.log(context.var)
-
-    console.log(products)
     return { meta, data: products }
   })
 }
 
-export async function create(data: { name: string }) {
+export async function create(userId: string, data: { name: string }) {
   return db.transaction().execute(async (trx) => {
-
     const schema = z.object({
       name: z
         .string()
         .min(1, { message: "Required" })
         .refine((val) => val.length >= 3, { message: "Minimum 3 characters" }),
     })
-
-    const context = getContext()
-    console.log(context.var)
 
     const validatedData = await schema.parseAsync(data)
 

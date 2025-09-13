@@ -3,23 +3,21 @@ import { NotFoundError } from "@/lib/error.js"
 import { checkAuth } from "@/lib/auth.js"
 
 import * as productService from "./product-service.js"
-const router = new Hono()
+import type { AuthenticatedContext } from "@/lib/context.js"
+const router = new Hono<AuthenticatedContext>()
 
 router.use(checkAuth)
 
-
-
-
-
 router.get("/", async (c) => {
   const { page, limit, keyword } = c.req.query()
-  const result = await productService.list(page, limit, keyword)
+  const result = await productService.list({ page, limit, keyword })
   return c.json(result)
 })
 
 router.post("/", async (c) => {
   const body = await c.req.json()
-  await productService.create(body)
+  const user = c.get("user")
+  await productService.create(user.id, body)
   return c.json({ message: "Successfully create data" }, 201)
 })
 
@@ -31,8 +29,5 @@ router.get("/:id", async (c) => {
   }
   return c.json(product)
 })
-
-
-
 
 export default router
