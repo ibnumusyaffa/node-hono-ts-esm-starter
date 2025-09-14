@@ -16,7 +16,7 @@
     "format:check": "prettier --ignore-path .gitignore --check \"**/*.+(js|ts|jsx|tsx)\"",
     "db:migrate": "kysely migrate:latest",
     "db:migrate:auth": "npx @better-auth/cli migrate",
-    "db:codegen": "kysely-codegen --dialect mysql --out-file ./src/lib/db/types.ts"
+    "db:codegen": "kysely-codegen --dialect postgres --out-file ./src/lib/db/types.ts"
   },
   "keywords": [],
   "author": "",
