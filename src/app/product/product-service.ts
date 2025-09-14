@@ -1,7 +1,6 @@
 import * as productRepo from "./product-repo.js"
 import z from "zod"
 import { db } from "@/lib/db/index.js"
-import { welcomeEmailJob } from "./product-job.js"
 
 export async function list({
   page,
@@ -17,7 +16,6 @@ export async function list({
     const limitNum = limit ? Number(limit) : 10
     const offset = (pageNum - 1) * limitNum
 
-    await welcomeEmailJob.send({ message: "Hello" })
 
     const { products, total } = await productRepo.findAll(
       trx,

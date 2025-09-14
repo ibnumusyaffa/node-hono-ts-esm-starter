@@ -38,6 +38,6 @@ describe("product", () => {
       name: ["Minimum 3 characters"],
     })
     expect(res.status).toBe(422)
-    expect({ name: "" }).not.toHaveRowInTable("product")
+    expect({ name: "a" }).not.toHaveRowInTable("product")
   })
 })

@@ -6,9 +6,11 @@ import { type DB } from "./types.js"
 
 import { Pool } from "pg"
 
+export const pool = new Pool({ connectionString: env.DATABASE_URL })
+
 export const db = new Kysely<DB>({
   dialect: new PostgresDialect({
-    pool: new Pool({ connectionString: env.DATABASE_URL }),
+    pool,
   }),
 })
 
