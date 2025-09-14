@@ -7,8 +7,14 @@ export const welcomeEmailJob = createJob("welcome_email")
       message: z.string().min(1),
     })
   )
-  .handle(async (jobs) => {
-    for (const job of jobs) {
-      console.log("[worker] processing job", job.name, "with data:", job.data)
+  .handle(
+    async (jobs) => {
+      for (const job of jobs) {
+        console.log("[worker] processing job", job.name, "with data:", job.data)
+      }
+    },
+    {
+      batchSize: 10,
+      pollingIntervalSeconds: 1,
     }
-  })
+  )
