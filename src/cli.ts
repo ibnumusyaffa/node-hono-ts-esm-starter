@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 // cli.js
 import { Command } from "commander"
-import * as productService from "@/app/product/product-service.js"
-import { db } from "@/lib/db/index.js"
+import { welcomeEmailJob } from "./app/product/product-job.js"
+import { boss } from "./lib/boss.js"
 
 const program = new Command()
 
@@ -20,15 +20,11 @@ program
   })
 
 
-program.command("user:list")
-  .description("List all users")
+program.command("worker:welcome-email")
+  .description("Start the welcome email worker")
   .action(async () => {
-    try {
-      await productService.list()
-    } finally {
-      // Close database connections to allow graceful exit
-      await db.destroy()
-    }
+    await boss.start()
+    await welcomeEmailJob.worker()
   })
 
 program.parse(process.argv)

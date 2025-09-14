@@ -1,15 +1,15 @@
-import { createPool } from "mysql2"
-import { Kysely, MysqlDialect, Migrator, Transaction } from "kysely"
+import { Kysely, PostgresDialect, Migrator, Transaction } from "kysely"
 import path from "node:path"
 import { TSFileMigrationProvider } from "kysely-ctl"
 import env from "../../config/env.js"
 import { type DB } from "./types.js"
 
-const pool = createPool(env.DATABASE_URL)
+import { Pool } from "pg"
 
 export const db = new Kysely<DB>({
-  // @ts-expect-error - TODO: fix this
-  dialect: new MysqlDialect({ pool }),
+  dialect: new PostgresDialect({
+    pool: new Pool({ connectionString: env.DATABASE_URL }),
+  }),
 })
 
 export const migrator = new Migrator({
@@ -21,5 +21,3 @@ export const migrator = new Migrator({
 })
 
 export type Trx = Transaction<DB>
-
-

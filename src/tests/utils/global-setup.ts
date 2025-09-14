@@ -48,23 +48,19 @@ export async function teardown() {
 }
 
 export async function truncateAllTables(): Promise<void> {
-  await sql`SET SESSION FOREIGN_KEY_CHECKS = 0`.execute(db)
+  // 1. Build a single statement that truncates every table in one shot
+  //    (PostgreSQL can do this in a single TRUNCATE … CASCADE call.)
+  const tables = await sql<{ tablename: string }>`
+    SELECT tablename
+    FROM pg_tables
+    WHERE schemaname = current_schema()
+      AND tablename <> ALL (ARRAY['kysely_migration', 'kysely_migration_lock'])
+  `.execute(db)
 
-  try {
-    const tables = await sql<{ TABLE_NAME: string }>`
-      SELECT TABLE_NAME FROM information_schema.tables
-      WHERE table_schema = DATABASE()
-        AND table_name NOT IN ('kysely_migration', 'kysely_migration_lock')
-        AND table_type = 'BASE TABLE'
-    `.execute(db)
+  if (tables.rows.length === 0) return
 
-    // These TRUNCATE operations run in parallel
-    await Promise.all(
-      tables.rows.map((row) =>
-        sql`TRUNCATE TABLE ${sql.table(row.TABLE_NAME)}`.execute(db)
-      )
-    )
-  } finally {
-    await sql`SET SESSION FOREIGN_KEY_CHECKS = 1`.execute(db)
-  }
+  const tableRefs = tables.rows.map((r) => sql.table(r.tablename))
+
+  // 2. Run it – CASCADE drops the rows even when FKs reference them.
+  await sql`TRUNCATE TABLE ${sql.join(tableRefs)} CASCADE`.execute(db)
 }

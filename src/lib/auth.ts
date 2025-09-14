@@ -1,14 +1,14 @@
 import { betterAuth } from "better-auth"
-import { createPool } from "mysql2/promise"
+
 import { createMiddleware } from "hono/factory"
 import env from "@/config/env.js"
 import { UnauthorizedError } from "@/lib/error.js"
-
+import { Pool } from "pg"
 export const auth = betterAuth({
   logger: {
     disabled: env.NODE_ENV === "test",
   },
-  database: createPool(env.DATABASE_URL),
+  database: new Pool({ connectionString: env.DATABASE_URL }),
   emailAndPassword: {
     enabled: true,
   },

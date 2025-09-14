@@ -1,22 +1,23 @@
 import * as productRepo from "./product-repo.js"
 import z from "zod"
 import { db } from "@/lib/db/index.js"
+import { welcomeEmailJob } from "./product-job.js"
 
-export async function list(
-  {
-    page,
-    limit,
-    keyword,
-  }: {
-    page?: string
-    limit?: string
-    keyword?: string
-  }
-) {
+export async function list({
+  page,
+  limit,
+  keyword,
+}: {
+  page?: string
+  limit?: string
+  keyword?: string
+}) {
   return db.transaction().execute(async (trx) => {
     const pageNum = page ? Number(page) : 1
     const limitNum = limit ? Number(limit) : 10
     const offset = (pageNum - 1) * limitNum
+
+    await welcomeEmailJob.send({ message: "Hello" })
 
     const { products, total } = await productRepo.findAll(
       trx,
@@ -34,7 +35,6 @@ export async function list(
   })
 }
 
-// Define schema outside the function for reusability and better type inference
 const createProductSchema = z.object({
   name: z
     .string()
