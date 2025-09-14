@@ -1,6 +1,6 @@
-import * as productJob from "./product-job.js"
+import { welcomeEmailJob } from "./product-job.js"
 
 
-productJob.send({ message: "Product 1" })
+welcomeEmailJob.send({ message: "Product 1" })
 
-productJob.worker()
+welcomeEmailJob.worker()

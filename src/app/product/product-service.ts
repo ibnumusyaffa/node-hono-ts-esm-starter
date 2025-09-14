@@ -34,17 +34,20 @@ export async function list(
   })
 }
 
-export async function create(userId: string, data: { name: string }) {
+// Define schema outside the function for reusability and better type inference
+const createProductSchema = z.object({
+  name: z
+    .string()
+    .min(1, { message: "Required" })
+    .refine((val) => val.length >= 3, { message: "Minimum 3 characters" }),
+})
+
+// Infer the type from the schema
+type CreateProductInput = z.infer<typeof createProductSchema>
+
+export async function create(userId: string, data: CreateProductInput) {
   return db.transaction().execute(async (trx) => {
-    const schema = z.object({
-      name: z
-        .string()
-        .min(1, { message: "Required" })
-        .refine((val) => val.length >= 3, { message: "Minimum 3 characters" }),
-    })
-
-    const validatedData = await schema.parseAsync(data)
-
+    const validatedData = await createProductSchema.parseAsync(data)
     return productRepo.create(trx, validatedData)
   })
 }
