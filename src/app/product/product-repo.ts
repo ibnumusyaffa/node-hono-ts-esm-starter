@@ -42,7 +42,7 @@ export async function create(
 export async function findById(trx: Trx, id: number) {
   return trx
     .selectFrom("product")
-    .where("id", "=", id)
+    .where("id", "=", id.toString())
     .selectAll()
     .executeTakeFirst()
 }
