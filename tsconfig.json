@@ -5,6 +5,7 @@
     "target": "es2022", //Compile target
     "lib": ["es2022"], //Tell TypeScript what built-in types to include
     "sourceMap": true,
+    "jsx": "react-jsx",
 
     /* Module system: */
     "moduleDetection":"force",

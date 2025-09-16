@@ -29,6 +29,11 @@ const env = createEnv({
     BETTER_AUTH_SECRET: z.string().min(1),
     BETTER_AUTH_URL: z.string().default("http://localhost:4000"),
 
+    MAIL_HOST: z.string().min(1).default("sandbox.smtp.mailtrap.io"),
+    MAIL_PORT: z.coerce.number().min(1).default(2525),
+    MAIL_USER: z.string().min(1).default("54e318bc5d0918"),
+    MAIL_PASSWORD: z.string().min(1).default("b5c503d4fecda0"),
+
     TEST_CONTAINER: z
       .string()
       .refine((s) => s === "true" || s === "false")
