@@ -12,7 +12,7 @@ import {
 } from "@react-email/components"
 import { transporter } from "@/lib/mailer.js"
 
-interface TemplateProps {
+type TemplateProps = {
   url: string
   name?: string
 }
@@ -22,25 +22,24 @@ export default function Template({ url, name }: TemplateProps) {
     <Html>
       <Head />
       <Preview>
-        Verify your email address to complete your account setup
+        Reset your password to regain access to your account
       </Preview>
       <Body style={main}>
         <Container style={container}>
           <Section style={logoContainer}>
-            <Heading style={h1}>Verify Your Email</Heading>
+            <Heading style={h1}>Reset Your Password</Heading>
           </Section>
 
           <Section style={section}>
             <Text style={text}>Hi{name ? ` ${name}` : ""},</Text>
             <Text style={text}>
-              Welcome! To complete your account setup and start using our
-              service, please verify your email address by clicking the button
-              below.
+              We received a request to reset your password. If you made this
+              request, click the button below to create a new password.
             </Text>
 
             <Section style={buttonContainer}>
               <Button href={url} style={button}>
-                Verify Email Address
+                Reset Password
               </Button>
             </Section>
 
@@ -51,12 +50,12 @@ export default function Template({ url, name }: TemplateProps) {
             <Text style={link}>{url}</Text>
 
             <Text style={text}>
-              This link will expire in 24 hours for security reasons.
+              This link will expire in 1 hour for security reasons.
             </Text>
 
             <Text style={footer}>
-              If you didn't create an account with us, you can safely ignore
-              this email.
+              If you didn't request a password reset, you can safely ignore
+              this email. Your password will remain unchanged.
             </Text>
           </Section>
         </Container>
@@ -109,7 +108,7 @@ const buttonContainer = {
 }
 
 const button = {
-  backgroundColor: "#3b82f6",
+  backgroundColor: "#dc2626",
   borderRadius: "8px",
   color: "#ffffff",
   fontSize: "16px",
@@ -122,7 +121,7 @@ const button = {
 }
 
 const link = {
-  color: "#3b82f6",
+  color: "#dc2626",
   fontSize: "14px",
   textDecoration: "underline",
   wordBreak: "break-all" as const,
@@ -139,7 +138,7 @@ export async function send(data: { to: string; url: string; name?: string }) {
   const emailHtml = await render(<Template url={data.url} name={data.name} />)
   await transporter.sendMail({
     to: data.to,
-    subject: "Verify your email address",
+    subject: "Reset your password",
     html: emailHtml,
   })
 }
