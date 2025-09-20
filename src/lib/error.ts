@@ -1,6 +1,8 @@
 /* eslint-disable unicorn/no-useless-error-capture-stack-trace */
+import env from "@/config/env.js"
+import { type Context } from "hono"
 import { type ContentfulStatusCode } from "hono/utils/http-status"
-import type z from "zod/v4"
+import { z } from "zod/v4"
 
 export class HTTPError extends Error {
   statusCode: ContentfulStatusCode
@@ -45,7 +47,7 @@ export class ValidationError extends HTTPError {
   }
 }
 
-export function formatZodErrors(error: z.ZodError): Record<string, string[]> {
+function formatZodErrors(error: z.ZodError): Record<string, string[]> {
   const errors: Record<string, string[]> = {}
   for (const issue of error.issues) {
     const path = issue.path.length > 0 ? issue.path.join(".") : "root"
@@ -59,4 +61,30 @@ export function formatZodErrors(error: z.ZodError): Record<string, string[]> {
   }
 
   return errors
+}
+
+export function errorHandler(error: Error, c: Context) {
+  if (error instanceof z.ZodError) {
+    return c.json(
+      { message: "Validation error", errors: formatZodErrors(error) },
+      422
+    )
+  }
+
+  if (error instanceof HTTPError) {
+    return c.json({ message: error.message }, error.statusCode)
+  }
+
+  return c.json(
+    {
+      message: "Internal server error",
+      error: env.APP_DEBUG
+        ? {
+            message: error.message,
+            stack: error.stack?.split("\n").map((item) => item.trim()),
+          }
+        : undefined,
+    },
+    500
+  )
 }

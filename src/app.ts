@@ -3,13 +3,9 @@ import { cors } from "hono/cors"
 import { requestId } from "hono/request-id"
 import { otel } from "@hono/otel"
 import { routePath } from "hono/route"
-import { z } from "zod"
 import { trace } from "@opentelemetry/api"
-
-import env from "@/config/env.js"
-
 import { logger, HttpLog } from "@/lib/logger.js"
-import { formatZodErrors, HTTPError } from "@/lib/error.js"
+import { errorHandler } from "@/lib/error.js"
 import { auth } from "@/lib/auth.js"
 
 import product from "@/app/product/product-router.js"
@@ -40,31 +36,6 @@ app.get("/", async (c) => {
 
 app.route("/product", product)
 
-//error handling
-app.onError((error, c) => {
-  if (error instanceof z.ZodError) {
-    return c.json(
-      { message: "Validation error", errors: formatZodErrors(error) },
-      422
-    )
-  }
-
-  if (error instanceof HTTPError) {
-    return c.json({ message: error.message }, error.statusCode)
-  }
-
-  return c.json(
-    {
-      message: "Internal server error",
-      error: env.APP_DEBUG
-        ? {
-            message: error.message,
-            stack: error.stack?.split("\n").map((item) => item.trim()),
-          }
-        : undefined,
-    },
-    500
-  )
-})
+app.onError(errorHandler)
 
 export default app
