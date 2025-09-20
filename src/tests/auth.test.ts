@@ -23,8 +23,6 @@ describe("auth", () => {
       method: "GET",
     })
 
-    console.log(await res.json())
-
     expect(res.status).toBe(200)
   })
 })

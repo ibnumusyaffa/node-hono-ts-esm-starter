@@ -71,6 +71,9 @@ importers:
       '@t3-oss/env-core':
         specifier: 0.13.8
         version: 0.13.8(typescript@5.9.2)(zod@4.1.9)
+      '@types/pg':
+        specifier: ^8.15.5
+        version: 8.15.5
       bentocache:
         specifier: ^1.5.0
         version: 1.5.0(kysely@0.28.7)
