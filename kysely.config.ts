@@ -5,7 +5,8 @@ export default defineConfig({
   kysely:db,
   migrations: {
     migrationFolder: "./src/lib/db/migrations",
-    migrator,
+    //@ts-ignore
+    migrator:migrator,
   },
   plugins: [],
   seeds: {

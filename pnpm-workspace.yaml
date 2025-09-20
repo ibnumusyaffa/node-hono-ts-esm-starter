@@ -1,6 +1,7 @@
 onlyBuiltDependencies:
   - cpu-features
   - esbuild
+  - oxc-resolver
   - protobufjs
   - sharp
   - ssh2

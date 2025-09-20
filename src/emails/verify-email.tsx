@@ -17,7 +17,7 @@ interface TemplateProps {
   name?: string
 }
 
-export default function Template({ url, name }: TemplateProps) {
+function Template({ url, name }: TemplateProps) {
   return (
     <Html>
       <Head />
