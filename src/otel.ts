@@ -60,7 +60,7 @@ const sdk = new NodeSDK({
   }),
   instrumentations: [
     getNodeAutoInstrumentations({
-      "@opentelemetry/instrumentation-mysql2": {
+      "@opentelemetry/instrumentation-pg": {
         enabled: true,
       },
       "@opentelemetry/instrumentation-http": {
