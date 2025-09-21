@@ -1,6 +1,8 @@
 import * as productRepo from "./product-repo.js"
 import z from "zod"
 import { db } from "@/lib/db/index.js"
+import { bento } from "@/lib/bento.js"
+import { NotFoundError } from "@/lib/error.js"
 
 export async function list({
   page,
@@ -15,7 +17,6 @@ export async function list({
     const pageNum = page ? Number(page) : 1
     const limitNum = limit ? Number(limit) : 10
     const offset = (pageNum - 1) * limitNum
-
 
     const { products, total } = await productRepo.findAll(
       trx,
@@ -52,6 +53,21 @@ export async function create(userId: string, data: CreateProductInput) {
 
 export async function detail(id: number) {
   return db.transaction().execute(async (trx) => {
-    return productRepo.findById(trx, id)
+    const product = await bento.getOrSet({
+      key: `product:${id}`,
+      factory: async ({ skip }) => {
+        const item = await productRepo.findById(trx, id)
+        if (!item) {
+          return skip()
+        }
+        return item
+      },
+      ttl: "1m",
+    })
+
+    if (!product) {
+      throw new NotFoundError("Product not found")
+    }
+    return product
   })
 }

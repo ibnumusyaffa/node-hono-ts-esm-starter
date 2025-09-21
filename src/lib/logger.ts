@@ -1,4 +1,4 @@
-import pino from "pino"
+import {pino} from "pino"
 import { type Context } from "hono"
 import { createMiddleware } from "hono/factory"
 import { routePath } from "hono/route"
@@ -43,4 +43,6 @@ export const HttpLog = createMiddleware(async (c, next) => {
     { res, req, duration },
     `Completed ${res.statusCode} ${req.method} ${req.route} in ${duration}ms`
   )
+
+  logger.info({ test: "t" }, "hhh")
 })

@@ -17,16 +17,13 @@ router.get("/", async (c) => {
 router.post("/", async (c) => {
   const body = await c.req.json()
   const user = c.get("user")
-  await productService.create(user.id, body)
-  return c.json({ message: "Successfully create data" }, 201)
+  const data = await productService.create(user.id, body)
+  return c.json({ message: "Successfully create data", data }, 201)
 })
 
 router.get("/:id", async (c) => {
   const id = Number.parseInt(c.req.param("id"))
   const product = await productService.detail(id)
-  if (!product) {
-    throw new NotFoundError("Product not found")
-  }
   return c.json(product)
 })
 

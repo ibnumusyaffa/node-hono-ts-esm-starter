@@ -1,7 +1,10 @@
-import { boss } from "@/lib/boss.js"
 import { z } from "zod"
+import pgBoss from "pg-boss"
+import env from "@/config/env.js"
 import type { Job as JobData, SendOptions, WorkOptions } from "pg-boss"
 import { logger } from "./logger.js"
+
+export const boss = new pgBoss(env.DATABASE_URL)
 
 class Job<T extends z.ZodType> {
   private jobName: string

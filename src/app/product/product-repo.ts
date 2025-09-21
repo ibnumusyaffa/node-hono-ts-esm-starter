@@ -32,11 +32,12 @@ export async function findAll(
   })
 }
 
-export async function create(
-  trx: Trx,
-  data: Insertable<Product>
-) {
-  return trx.insertInto("product").values(data).execute()
+export async function create(trx: Trx, data: Insertable<Product>) {
+  return trx
+    .insertInto("product")
+    .values(data)
+    .returningAll()
+    .executeTakeFirst()
 }
 
 export async function findById(trx: Trx, id: number) {

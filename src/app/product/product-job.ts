@@ -1,4 +1,5 @@
 import { createJob } from "@/lib/job.js"
+import { logger } from "@/lib/logger.js"
 import { z } from "zod"
 
 export const welcomeEmailJob = createJob("welcome_email")
@@ -11,12 +12,12 @@ export const welcomeEmailJob = createJob("welcome_email")
     async (jobs) => {
       await Promise.all(
         jobs.map(async (job) => {
-          console.log("[worker] start job", job.id)
+          logger.info(job, "[worker] start job")
           await new Promise((resolve) => setTimeout(resolve, 1000 * 5))
           if (Math.random() < 0.5) {
             throw new Error("test")
           }
-          console.log("[worker] complete job", job.id)
+          logger.info(job, "[worker] completed job")
         })
       )
     },
