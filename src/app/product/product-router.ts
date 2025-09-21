@@ -1,5 +1,4 @@
 import { Hono } from "hono"
-import { NotFoundError } from "@/lib/error.js"
 import { checkAuth } from "@/lib/auth.js"
 
 import * as productService from "./product-service.js"

@@ -1,6 +1,6 @@
-import { it, describe, expect, test } from "vitest"
-import { createFetch } from "./utils/auth.js"
-import { createUser } from "./seeders/user.js"
+import { it, describe, expect } from "vitest"
+import { createFetch } from "@/tests/utils/auth.js"
+import { createUser } from "@/tests/seeders/user.js"
 
 describe("product", () => {
   describe("POST /product", () => {
@@ -43,7 +43,7 @@ describe("product", () => {
         method: "POST",
         body: JSON.stringify({ name: "Product 1" }),
       })
-      const createRespBody = (await createResp.json()) as any
+      const createRespBody: any = await createResp.json()
 
       const detailResp = await fetch(`/product/${createRespBody.data.id}`, {
         method: "GET",
@@ -59,7 +59,6 @@ describe("product", () => {
       const detailResp = await fetch(`/product/99999`, {
         method: "GET",
       })
-
       expect(detailResp.status).toBe(404)
     })
   })
