@@ -5,7 +5,7 @@ import * as productService from "./product-service.js"
 import type { AuthenticatedContext } from "@/lib/context.js"
 const router = new Hono<AuthenticatedContext>()
 
-router.use(checkAuth)
+// router.use(checkAuth)
 
 router.get("/", async (c) => {
   const { page, limit, keyword } = c.req.query()

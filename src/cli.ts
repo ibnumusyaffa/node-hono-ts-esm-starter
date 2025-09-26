@@ -2,7 +2,7 @@
 // cli.js
 import { Command } from "commander"
 import { welcomeEmailJob } from "./app/product/product-job.js"
-import { boss } from "./lib/boss.js"
+import { boss } from "./lib/job.js"
 
 const program = new Command()
 
@@ -19,8 +19,8 @@ program
     console.log(`Current time: ${currentTime}`)
   })
 
-
-program.command("worker:welcome-email")
+program
+  .command("worker:welcome-email")
   .description("Start the welcome email worker")
   .action(async () => {
     await boss.start()
