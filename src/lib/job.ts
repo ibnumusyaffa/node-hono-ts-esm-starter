@@ -247,7 +247,12 @@ export class Boss<T extends z.ZodType> {
     return this
   }
 
-  define(jobName: string): JobBuilder {
+  registerSchedule(schedule: () => Promise<void>) {
+    this.schedules.push(schedule)
+    return this
+  }
+
+  createJob(jobName: string): JobBuilder {
     return new JobBuilder(this.boss, jobName)
   }
 
@@ -308,11 +313,6 @@ export class Boss<T extends z.ZodType> {
     }
 
     return newSchedule
-  }
-
-  registerSchedule(schedule: () => Promise<void>) {
-    this.schedules.push(schedule)
-    return this
   }
 }
 

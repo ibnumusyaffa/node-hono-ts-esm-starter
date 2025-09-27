@@ -5,7 +5,7 @@ import { z } from "zod"
 
 //define job
 export const welcomeEmailJob = boss
-  .define("product-job")
+  .createJob("product-job")
   .input(
     z.object({
       message: z.string().min(1),
