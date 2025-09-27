@@ -1,7 +1,12 @@
 import { z } from "zod"
 import pgBoss from "pg-boss"
 import env from "@/config/env.js"
-import type { Job as JobData, SendOptions, WorkOptions } from "pg-boss"
+import type {
+  Job as JobData,
+  ScheduleOptions,
+  SendOptions,
+  WorkOptions,
+} from "pg-boss"
 import { logger } from "./logger.js"
 import {
   trace,
@@ -54,7 +59,7 @@ class Job<T extends z.ZodType> {
     const validatedData = (await this.schema.parseAsync(data)) as object
 
     return tracer.startActiveSpan(
-      `job.send ${this.jobName}`,
+      `job.producer ${this.jobName}`,
       {
         kind: SpanKind.PRODUCER,
         attributes: {
@@ -64,7 +69,7 @@ class Job<T extends z.ZodType> {
       },
       async (span) => {
         try {
-          logger.info(validatedData, `Sending job ${this.jobName} with data`)
+          logger.info(`Sending job ${this.jobName} with data`)
 
           // Create job payload with traceparent (W3C standard)
           const jobPayload = {
@@ -115,7 +120,7 @@ class Job<T extends z.ZodType> {
 
       return context.with(activeContext, () => {
         return tracer.startActiveSpan(
-          `job.execute ${this.jobName}`,
+          `job.consumer ${this.jobName}`,
           {
             kind: SpanKind.CONSUMER,
             attributes: {
@@ -127,14 +132,23 @@ class Job<T extends z.ZodType> {
           activeContext,
           async (span) => {
             try {
+              logger.info(job, `job.consumer ${this.jobName} started`)
               await this.handler(job)
               span.setStatus({ code: SpanStatusCode.OK })
+              logger.info(
+                job,
+                `job.consumer ${this.jobName} completed successfully`
+              )
             } catch (error) {
               span.recordException(error as Error)
               span.setStatus({
                 code: SpanStatusCode.ERROR,
                 message: (error as Error).message,
               })
+              logger.error(
+                error as Error,
+                `job.consumer ${this.jobName} failed`
+              )
               throw error
             } finally {
               span.end()
@@ -245,52 +259,45 @@ export class Boss<T extends z.ZodType> {
     ])
   }
 
-  async schedule(
+  createSchedule(
     name: string,
     cron: string,
-    handler: pgBoss.WorkHandler<unknown>
+    handler: (job: JobData<unknown>) => Promise<any>,
+    options?: ScheduleOptions
   ) {
     let newSchedule = async () => {
       logger.info(`Scheduling job ${name} with cron ${cron}`)
       await this.boss.unschedule(name)
       await this.boss.createQueue(name)
-      await this.boss.schedule(name, cron, undefined, { retryLimit: 0 })
+      await this.boss.schedule(name, cron, undefined, options)
 
       // Wrap scheduled job handler with OpenTelemetry tracing
-      await this.boss.work(name, async (job) => {
-        const tracer = trace.getTracer("job-queue")
-
+      await this.boss.work(name, { batchSize: 1 }, async ([job]) => {
         return tracer.startActiveSpan(
-          `scheduled.job.execute ${name}`,
+          `job.scheduled ${name}`,
           {
-            kind: SpanKind.CONSUMER,
+            kind: SpanKind.INTERNAL,
             attributes: {
               "job.name": name,
-              "job.id": (job as any).id,
-              "job.type": "scheduled",
               "job.cron": cron,
-              "job.attempt": ((job as any).retryCount || 0) + 1,
-              "job.data": JSON.stringify((job as any).data),
             },
           },
           async (span) => {
             try {
+              if (!job) {
+                throw new Error("Job is undefined")
+              }
+              logger.info(job, `job.scheduled ${name} started`)
               await handler(job)
-
               span.setStatus({ code: SpanStatusCode.OK })
-              logger.info(
-                `Scheduled job ${name} (${(job as any).id}) completed successfully`
-              )
+              logger.info(job, `job.scheduled ${name} completed successfully`)
             } catch (error) {
               span.recordException(error as Error)
               span.setStatus({
                 code: SpanStatusCode.ERROR,
                 message: (error as Error).message,
               })
-              logger.error(
-                error as Error,
-                `Scheduled job ${name} (${(job as any).id}) failed`
-              )
+              logger.error(error as Error, `job.scheduled ${name} failed`)
               throw error
             } finally {
               span.end()
@@ -300,7 +307,12 @@ export class Boss<T extends z.ZodType> {
       })
     }
 
-    this.schedules.push(newSchedule)
+    return newSchedule
+  }
+
+  registerSchedule(schedule: () => Promise<void>) {
+    this.schedules.push(schedule)
+    return this
   }
 }
 
