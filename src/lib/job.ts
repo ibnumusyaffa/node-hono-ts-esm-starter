@@ -7,7 +7,6 @@ import type {
   SendOptions,
   WorkOptions,
 } from "pg-boss"
-import { logger } from "./logger.js"
 import {
   trace,
   context,
@@ -29,7 +28,6 @@ function getCurrentTraceparent(): Carrier | undefined {
     propagation.inject(context.active(), headers)
     return headers
   } catch (error) {
-    logger.warn({ error }, "Failed to inject trace context")
     return undefined
   }
 }
@@ -69,7 +67,6 @@ class Job<T extends z.ZodType> {
       },
       async (span) => {
         try {
-          logger.info(`Sending job ${this.jobName} with data`)
 
           // Create job payload with traceparent (W3C standard)
           const jobPayload = {
@@ -132,23 +129,16 @@ class Job<T extends z.ZodType> {
           activeContext,
           async (span) => {
             try {
-              logger.info(job, `job.consumer ${this.jobName} started`)
+
               await this.handler(job)
               span.setStatus({ code: SpanStatusCode.OK })
-              logger.info(
-                job,
-                `job.consumer ${this.jobName} completed successfully`
-              )
+
             } catch (error) {
               span.recordException(error as Error)
               span.setStatus({
                 code: SpanStatusCode.ERROR,
                 message: (error as Error).message,
               })
-              logger.error(
-                error as Error,
-                `job.consumer ${this.jobName} failed`
-              )
               throw error
             } finally {
               span.end()
@@ -242,7 +232,7 @@ class ScheduledJob {
   }
 
   async listen(): Promise<void> {
-    logger.info(`Scheduling job ${this.name} with cron ${this.cron}`)
+
     await this.boss.unschedule(this.name)
     await this.boss.createQueue(this.name)
     await this.boss.schedule(this.name, this.cron, undefined, this.options)
@@ -263,20 +253,16 @@ class ScheduledJob {
             if (!job) {
               throw new Error("Job is undefined")
             }
-            logger.info(job, `job.scheduled ${this.name} started`)
+
             await this.handler(job)
             span.setStatus({ code: SpanStatusCode.OK })
-            logger.info(
-              job,
-              `job.scheduled ${this.name} completed successfully`
-            )
+
           } catch (error) {
             span.recordException(error as Error)
             span.setStatus({
               code: SpanStatusCode.ERROR,
               message: (error as Error).message,
             })
-            logger.error(error as Error, `job.scheduled ${this.name} failed`)
             throw error
           } finally {
             span.end()
@@ -303,32 +289,29 @@ export class Boss<T extends z.ZodType> {
     this.jobs = []
   }
 
-  register(newJob: Job<T>) {
-    const isJobExists = this.jobs.find(
-      (item) => item.jobName === newJob.jobName
-    )
+  register(job: Job<T> | ScheduledJob) {
+    if (job instanceof ScheduledJob) {
+      const existingJob = this.schedule.find(
+        (item) => item.jobName === job.jobName
+      )
 
-    if (isJobExists) {
-      logger.warn("job name already exists")
-      return this
+      if (existingJob) {
+        throw new Error(`Scheduled job ${job.jobName} already exists`)
+      }
+
+      this.schedule.push(job)
+    } else {
+      const isJobExists = this.jobs.find(
+        (item) => item.jobName === job.jobName
+      )
+
+      if (isJobExists) {
+        throw new Error(`Job ${job.jobName} already exists`)
+      }
+
+      this.jobs.push(job)
     }
 
-    this.jobs.push(newJob)
-
-    return this
-  }
-
-  registerScheduledJob(scheduledJob: ScheduledJob) {
-    const existingJob = this.schedule.find(
-      (job) => job.jobName === scheduledJob.jobName
-    )
-
-    if (existingJob) {
-      logger.warn(`Scheduled job ${scheduledJob.jobName} already exists`)
-      return this
-    }
-
-    this.schedule.push(scheduledJob)
     return this
   }
 

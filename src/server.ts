@@ -10,7 +10,7 @@ import {
 } from "./app/product/product-job.js"
 
 boss.register(welcomeEmailJob)
-boss.registerScheduledJob(newsletterSchedule)
+boss.register(newsletterSchedule)
 
 boss.start()
 

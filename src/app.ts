@@ -24,7 +24,7 @@ app.use(async (c, next) => {
 
 app.use("*", otel())
 app.use("*", requestId())
-app.use(HttpLog)
+// app.use(HttpLog)
 app.use(cors())
 
 //auth
