@@ -1,25 +1,46 @@
 import { z } from "zod"
 import pgBoss from "pg-boss"
 import env from "@/config/env.js"
-import type {
-  Job as JobData,
-  SendOptions,
-  WorkOptions,
-} from "pg-boss"
+import type { Job as JobData, SendOptions, WorkOptions } from "pg-boss"
 import { logger } from "./logger.js"
+import {
+  trace,
+  context,
+  SpanStatusCode,
+  SpanKind,
+  propagation,
+} from "@opentelemetry/api"
+
+const tracer = trace.getTracer("job-queue")
+
+type Carrier = {
+  traceparent?: string
+  tracestate?: string
+}
+
+function getCurrentTraceparent(): Carrier | undefined {
+  try {
+    const headers: Record<string, string> = {}
+    propagation.inject(context.active(), headers)
+    return headers
+  } catch (error) {
+    logger.warn({ error }, "Failed to inject trace context")
+    return undefined
+  }
+}
 
 class Job<T extends z.ZodType> {
   private boss: pgBoss
   public jobName: string
   private schema: T
-  private handler: (jobs: Array<JobData<z.infer<T>>>) => Promise<void>
+  private handler: (jobs: JobData<z.infer<T>>) => Promise<void>
   private workOptions?: WorkOptions
 
   constructor(
     boss: pgBoss,
     jobName: string,
     schema: T,
-    handler: (jobs: Array<JobData<z.infer<T>>>) => Promise<void>,
+    handler: (jobs: JobData<z.infer<T>>) => Promise<void>,
     workOptions?: WorkOptions
   ) {
     this.boss = boss
@@ -30,27 +51,119 @@ class Job<T extends z.ZodType> {
   }
 
   async send(data: z.infer<T>, options?: SendOptions): Promise<string | null> {
-    const validatedData = await this.schema.parseAsync(data)
+    const validatedData = (await this.schema.parseAsync(data)) as object
 
-    logger.info(`Sending job ${this.jobName} with data`)
+    return tracer.startActiveSpan(
+      `job.send ${this.jobName}`,
+      {
+        kind: SpanKind.PRODUCER,
+        attributes: {
+          "job.name": this.jobName,
+          "job.data": JSON.stringify(validatedData),
+        },
+      },
+      async (span) => {
+        try {
+          logger.info(validatedData, `Sending job ${this.jobName} with data`)
 
-    if (options) {
-      return this.boss.send(this.jobName, validatedData as object, options)
-    }
-    return this.boss.send(this.jobName, validatedData as object)
+          // Create job payload with traceparent (W3C standard)
+          const jobPayload = {
+            ...validatedData,
+            __traceparent: getCurrentTraceparent(),
+          }
+
+          let jobId: string | null
+          if (options) {
+            jobId = await this.boss.send(this.jobName, jobPayload, options)
+          } else {
+            jobId = await this.boss.send(this.jobName, jobPayload)
+          }
+
+          span.setAttributes({
+            "job.id": jobId || "unknown",
+          })
+
+          span.setStatus({ code: SpanStatusCode.OK })
+          return jobId
+        } catch (error) {
+          span.recordException(error as Error)
+          span.setStatus({
+            code: SpanStatusCode.ERROR,
+            message: (error as Error).message,
+          })
+          throw error
+        } finally {
+          span.end()
+        }
+      }
+    )
   }
 
   async worker(): Promise<string> {
     await this.boss.createQueue(this.jobName)
 
+    const wrappedHandler = async (job: JobData<z.infer<T>>) => {
+      // Extract traceparent from job data with proper typing
+      const jobData = job.data as z.infer<T> & {
+        __traceparent?: Carrier | undefined
+      }
+
+      const activeContext = propagation.extract(
+        context.active(),
+        jobData?.__traceparent
+      )
+
+      return context.with(activeContext, () => {
+        return tracer.startActiveSpan(
+          `job.execute ${this.jobName}`,
+          {
+            kind: SpanKind.CONSUMER,
+            attributes: {
+              "job.name": this.jobName,
+              "job.id": job.id,
+              "job.data": JSON.stringify(job.data),
+            },
+          },
+          activeContext,
+          async (span) => {
+            try {
+              await this.handler(job)
+              span.setStatus({ code: SpanStatusCode.OK })
+            } catch (error) {
+              span.recordException(error as Error)
+              span.setStatus({
+                code: SpanStatusCode.ERROR,
+                message: (error as Error).message,
+              })
+              throw error
+            } finally {
+              span.end()
+            }
+          }
+        )
+      })
+    }
+
     if (this.workOptions) {
       return this.boss.work<z.infer<T>>(
         this.jobName,
         this.workOptions,
-        this.handler
+        async (jobs) => {
+          await Promise.all(
+            jobs.map(async (job) => {
+              await wrappedHandler(job)
+            })
+          )
+        }
       )
     }
-    return this.boss.work<z.infer<T>>(this.jobName, this.handler)
+    return this.boss.work<z.infer<T>>(this.jobName, async (jobs) => {
+      await Promise.all(
+        jobs.map(async (job) => {
+          await wrappedHandler(job)
+        })
+      )
+    })
   }
 }
 
@@ -77,7 +190,7 @@ class JobBuilder<T extends z.ZodType = z.ZodNever> {
     return this
   }
 
-  handle(handler: (jobs: Array<JobData<z.infer<T>>>) => Promise<void>): Job<T> {
+  handle(handler: (jobs: JobData<z.infer<T>>) => Promise<void>): Job<T> {
     if (!this.schema) {
       throw new Error(
         `Job "${this.jobName}" requires input schema to be defined before handle`
@@ -106,7 +219,9 @@ export class Boss<T extends z.ZodType> {
   }
 
   register(newJob: Job<T>) {
-    const isJobExists = this.jobs.find((item) => item.jobName === newJob.jobName)
+    const isJobExists = this.jobs.find(
+      (item) => item.jobName === newJob.jobName
+    )
 
     if (isJobExists) {
       logger.warn("job name already exists")
@@ -126,7 +241,7 @@ export class Boss<T extends z.ZodType> {
     await this.boss.start()
     await Promise.all([
       ...this.jobs.map((job) => job.worker()),
-      ...this.schedules.map((schedule) => schedule())
+      ...this.schedules.map((schedule) => schedule()),
     ])
   }
 
@@ -140,8 +255,48 @@ export class Boss<T extends z.ZodType> {
       await this.boss.unschedule(name)
       await this.boss.createQueue(name)
       await this.boss.schedule(name, cron, undefined, { retryLimit: 0 })
+
+      // Wrap scheduled job handler with OpenTelemetry tracing
       await this.boss.work(name, async (job) => {
-        await handler(job)
+        const tracer = trace.getTracer("job-queue")
+
+        return tracer.startActiveSpan(
+          `scheduled.job.execute ${name}`,
+          {
+            kind: SpanKind.CONSUMER,
+            attributes: {
+              "job.name": name,
+              "job.id": (job as any).id,
+              "job.type": "scheduled",
+              "job.cron": cron,
+              "job.attempt": ((job as any).retryCount || 0) + 1,
+              "job.data": JSON.stringify((job as any).data),
+            },
+          },
+          async (span) => {
+            try {
+              await handler(job)
+
+              span.setStatus({ code: SpanStatusCode.OK })
+              logger.info(
+                `Scheduled job ${name} (${(job as any).id}) completed successfully`
+              )
+            } catch (error) {
+              span.recordException(error as Error)
+              span.setStatus({
+                code: SpanStatusCode.ERROR,
+                message: (error as Error).message,
+              })
+              logger.error(
+                error as Error,
+                `Scheduled job ${name} (${(job as any).id}) failed`
+              )
+              throw error
+            } finally {
+              span.end()
+            }
+          }
+        )
       })
     }
 

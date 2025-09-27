@@ -27,6 +27,7 @@ export async function list({
     )
 
     await welcomeEmailJob.send({ message: "Hello, world!" })
+
     const meta = {
       total,
       totalPages: Math.ceil(total / limitNum),

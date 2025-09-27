@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 // cli.js
+// Import OpenTelemetry configuration first
+import "./otel.js"
 import { Command } from "commander"
 import { welcomeEmailJob } from "./app/product/product-job.js"
 import { boss } from "./lib/job.js"

@@ -14,12 +14,6 @@ export const welcomeEmailJob = boss
     batchSize: 3,
     pollingIntervalSeconds: 1,
   })
-  .handle(async (jobs) => {
-    await Promise.all(
-      jobs.map(async (job) => {
-        logger.info("[worker] start job")
-        logger.info(job.data, "job data")
-        await new Promise((resolve) => setTimeout(resolve, 1000 * 5))
-      })
-    )
+  .handle(async (job) => {
+    logger.info(job.data,"[worker] start job")
   })
