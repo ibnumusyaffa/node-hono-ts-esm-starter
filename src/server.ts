@@ -9,8 +9,8 @@ import {
   newsletterSchedule,
 } from "./app/product/product-job.js"
 
-boss.register(welcomeEmailJob)
-boss.register(newsletterSchedule)
+boss.work(welcomeEmailJob)
+// boss.work(newsletterSchedule)
 
 boss.start()
 

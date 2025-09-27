@@ -14,6 +14,7 @@ import {
   SpanKind,
   propagation,
 } from "@opentelemetry/api"
+import { logger } from "./logger.js"
 
 const tracer = trace.getTracer("job-queue")
 
@@ -67,7 +68,6 @@ class Job<T extends z.ZodType> {
       },
       async (span) => {
         try {
-
           // Create job payload with traceparent (W3C standard)
           const jobPayload = {
             ...validatedData,
@@ -86,6 +86,7 @@ class Job<T extends z.ZodType> {
           })
 
           span.setStatus({ code: SpanStatusCode.OK })
+          logger.info(`Sending job ${this.jobName}`)
           return jobId
         } catch (error) {
           span.recordException(error as Error)
@@ -102,8 +103,6 @@ class Job<T extends z.ZodType> {
   }
 
   async listen(): Promise<string> {
-    await this.boss.createQueue(this.jobName)
-
     const wrappedHandler = async (job: JobData<z.infer<T>>) => {
       // Extract traceparent from job data with proper typing
       const jobData = job.data as z.infer<T> & {
@@ -129,10 +128,8 @@ class Job<T extends z.ZodType> {
           activeContext,
           async (span) => {
             try {
-
               await this.handler(job)
               span.setStatus({ code: SpanStatusCode.OK })
-
             } catch (error) {
               span.recordException(error as Error)
               span.setStatus({
@@ -210,7 +207,7 @@ class JobBuilder<T extends z.ZodType = z.ZodNever> {
   }
 }
 
-class ScheduledJob {
+class Schedule {
   private boss: pgBoss
   private name: string
   private cron: string
@@ -232,7 +229,6 @@ class ScheduledJob {
   }
 
   async listen(): Promise<void> {
-
     await this.boss.unschedule(this.name)
     await this.boss.createQueue(this.name)
     await this.boss.schedule(this.name, this.cron, undefined, this.options)
@@ -256,7 +252,6 @@ class ScheduledJob {
 
             await this.handler(job)
             span.setStatus({ code: SpanStatusCode.OK })
-
           } catch (error) {
             span.recordException(error as Error)
             span.setStatus({
@@ -278,9 +273,10 @@ class ScheduledJob {
 }
 
 export class Boss<T extends z.ZodType> {
-  readonly boss: pgBoss
-  jobs: Job<T>[]
-  private schedule: ScheduledJob[] = []
+  private boss: pgBoss
+  private jobs: Job<T>[]
+  private schedule: Schedule[] = []
+  private queues: string[] = []
 
   constructor(connection: string) {
     this.boss = new pgBoss({
@@ -289,8 +285,8 @@ export class Boss<T extends z.ZodType> {
     this.jobs = []
   }
 
-  register(job: Job<T> | ScheduledJob) {
-    if (job instanceof ScheduledJob) {
+  work(job: Job<T> | Schedule) {
+    if (job instanceof Schedule) {
       const existingJob = this.schedule.find(
         (item) => item.jobName === job.jobName
       )
@@ -301,9 +297,7 @@ export class Boss<T extends z.ZodType> {
 
       this.schedule.push(job)
     } else {
-      const isJobExists = this.jobs.find(
-        (item) => item.jobName === job.jobName
-      )
+      const isJobExists = this.jobs.find((item) => item.jobName === job.jobName)
 
       if (isJobExists) {
         throw new Error(`Job ${job.jobName} already exists`)
@@ -316,11 +310,13 @@ export class Boss<T extends z.ZodType> {
   }
 
   createJob(jobName: string): JobBuilder {
+    this.queues.push(jobName)
     return new JobBuilder(this.boss, jobName)
   }
 
   async start() {
     await this.boss.start()
+    await Promise.all(this.queues.map((item) => this.boss.createQueue(item)))
     await Promise.all([
       ...this.jobs.map((item) => item.listen()),
       ...this.schedule.map((item) => item.listen()),
@@ -332,8 +328,8 @@ export class Boss<T extends z.ZodType> {
     cron: string,
     handler: (job: JobData<unknown>) => Promise<any>,
     options?: ScheduleOptions
-  ): ScheduledJob {
-    return new ScheduledJob(this.boss, name, cron, handler, options)
+  ): Schedule {
+    return new Schedule(this.boss, name, cron, handler, options)
   }
 }
 
