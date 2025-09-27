@@ -104,7 +104,7 @@ class Job<T extends z.ZodType> {
     )
   }
 
-  async worker(): Promise<string> {
+  async listen(): Promise<string> {
     await this.boss.createQueue(this.jobName)
 
     const wrappedHandler = async (job: JobData<z.infer<T>>) => {
@@ -220,10 +220,81 @@ class JobBuilder<T extends z.ZodType = z.ZodNever> {
   }
 }
 
+class ScheduledJob {
+  private boss: pgBoss
+  private name: string
+  private cron: string
+  private handler: (job: JobData<unknown>) => Promise<any>
+  private options?: ScheduleOptions
+
+  constructor(
+    boss: pgBoss,
+    name: string,
+    cron: string,
+    handler: (job: JobData<unknown>) => Promise<any>,
+    options?: ScheduleOptions
+  ) {
+    this.boss = boss
+    this.name = name
+    this.cron = cron
+    this.handler = handler
+    this.options = options
+  }
+
+  async listen(): Promise<void> {
+    logger.info(`Scheduling job ${this.name} with cron ${this.cron}`)
+    await this.boss.unschedule(this.name)
+    await this.boss.createQueue(this.name)
+    await this.boss.schedule(this.name, this.cron, undefined, this.options)
+
+    // Wrap scheduled job handler with OpenTelemetry tracing
+    await this.boss.work(this.name, { batchSize: 1 }, async ([job]) => {
+      return tracer.startActiveSpan(
+        `job.scheduled ${this.name}`,
+        {
+          kind: SpanKind.INTERNAL,
+          attributes: {
+            "job.name": this.name,
+            "job.cron": this.cron,
+          },
+        },
+        async (span) => {
+          try {
+            if (!job) {
+              throw new Error("Job is undefined")
+            }
+            logger.info(job, `job.scheduled ${this.name} started`)
+            await this.handler(job)
+            span.setStatus({ code: SpanStatusCode.OK })
+            logger.info(
+              job,
+              `job.scheduled ${this.name} completed successfully`
+            )
+          } catch (error) {
+            span.recordException(error as Error)
+            span.setStatus({
+              code: SpanStatusCode.ERROR,
+              message: (error as Error).message,
+            })
+            logger.error(error as Error, `job.scheduled ${this.name} failed`)
+            throw error
+          } finally {
+            span.end()
+          }
+        }
+      )
+    })
+  }
+
+  get jobName(): string {
+    return this.name
+  }
+}
+
 export class Boss<T extends z.ZodType> {
   readonly boss: pgBoss
   jobs: Job<T>[]
-  private schedules: any[] = []
+  private schedule: ScheduledJob[] = []
 
   constructor(connection: string) {
     this.boss = new pgBoss({
@@ -247,8 +318,17 @@ export class Boss<T extends z.ZodType> {
     return this
   }
 
-  registerSchedule(schedule: () => Promise<void>) {
-    this.schedules.push(schedule)
+  registerScheduledJob(scheduledJob: ScheduledJob) {
+    const existingJob = this.schedule.find(
+      (job) => job.jobName === scheduledJob.jobName
+    )
+
+    if (existingJob) {
+      logger.warn(`Scheduled job ${scheduledJob.jobName} already exists`)
+      return this
+    }
+
+    this.schedule.push(scheduledJob)
     return this
   }
 
@@ -259,8 +339,8 @@ export class Boss<T extends z.ZodType> {
   async start() {
     await this.boss.start()
     await Promise.all([
-      ...this.jobs.map((job) => job.worker()),
-      ...this.schedules.map((schedule) => schedule()),
+      ...this.jobs.map((item) => item.listen()),
+      ...this.schedule.map((item) => item.listen()),
     ])
   }
 
@@ -269,50 +349,8 @@ export class Boss<T extends z.ZodType> {
     cron: string,
     handler: (job: JobData<unknown>) => Promise<any>,
     options?: ScheduleOptions
-  ) {
-    let newSchedule = async () => {
-      logger.info(`Scheduling job ${name} with cron ${cron}`)
-      await this.boss.unschedule(name)
-      await this.boss.createQueue(name)
-      await this.boss.schedule(name, cron, undefined, options)
-
-      // Wrap scheduled job handler with OpenTelemetry tracing
-      await this.boss.work(name, { batchSize: 1 }, async ([job]) => {
-        return tracer.startActiveSpan(
-          `job.scheduled ${name}`,
-          {
-            kind: SpanKind.INTERNAL,
-            attributes: {
-              "job.name": name,
-              "job.cron": cron,
-            },
-          },
-          async (span) => {
-            try {
-              if (!job) {
-                throw new Error("Job is undefined")
-              }
-              logger.info(job, `job.scheduled ${name} started`)
-              await handler(job)
-              span.setStatus({ code: SpanStatusCode.OK })
-              logger.info(job, `job.scheduled ${name} completed successfully`)
-            } catch (error) {
-              span.recordException(error as Error)
-              span.setStatus({
-                code: SpanStatusCode.ERROR,
-                message: (error as Error).message,
-              })
-              logger.error(error as Error, `job.scheduled ${name} failed`)
-              throw error
-            } finally {
-              span.end()
-            }
-          }
-        )
-      })
-    }
-
-    return newSchedule
+  ): ScheduledJob {
+    return new ScheduledJob(this.boss, name, cron, handler, options)
   }
 }
 
