@@ -9,6 +9,7 @@ import { errorHandler } from "@/lib/error.js"
 import { auth } from "@/lib/auth.js"
 
 import product from "@/app/product/product-router.js"
+import upload from "@/app/upload/upload-router.js"
 
 const app = new Hono()
 
@@ -35,6 +36,8 @@ app.get("/", async (c) => {
 })
 
 app.route("/product", product)
+
+app.route("/file", upload)
 
 app.onError(errorHandler)
 
