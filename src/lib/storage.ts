@@ -21,7 +21,6 @@ const localAdapter = new LocalStorageAdapter(
 // Initialize storage
 export const storage = new FileStorage(localAdapter)
 
-
 export function getContentType(filename: string) {
   return mime.lookup(filename) || "application/octet-stream"
 }

@@ -13,7 +13,7 @@ const env = createEnv({
     NODE_ENV: z
       .enum(["production", "development", "test"])
       .default("development"),
-    PORT: z.coerce.number().default(3000),
+    PORT: z.coerce.number().default(4000),
 
     APP_NAME: z.string().default("MyApp"),
     APP_DEBUG: z
