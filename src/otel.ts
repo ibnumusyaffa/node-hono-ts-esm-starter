@@ -19,45 +19,39 @@ import { BatchLogRecordProcessor } from "@opentelemetry/sdk-logs"
 import { createAddHookMessageChannel } from "import-in-the-middle"
 import { register } from "node:module"
 
-
 //ESM hooks: see https://github.com/open-telemetry/opentelemetry-js/issues/4933
 const { registerOptions, waitForAllMessagesAcknowledged } =
   createAddHookMessageChannel()
 
 register("import-in-the-middle/hook.mjs", import.meta.url, registerOptions)
 
-// Configure exporters
-const traceExporter = new OTLPTraceExporter({
-  url: `${env.OTEL_EXPORTER_OTLP_TRACES_ENDPOINT}`,
-})
-
-const metricExporter = new OTLPMetricExporter({
-  url: `${env.OTEL_EXPORTER_OTLP_METRICS_ENDPOINT}`,
-})
-
-const logExporter = new OTLPLogExporter({
-  url: `${env.OTEL_EXPORTER_OTLP_LOGS_ENDPOINT}`,
-})
-
-const resource = resourceFromAttributes({
-  [ATTR_SERVICE_NAME]: env.OTEL_SERVICE_NAME,
-  [ATTR_SERVICE_VERSION]: env.OTEL_SERVICE_VERSION,
-})
 
 const sdk = new NodeSDK({
-  resource,
-  traceExporter,
+  resource: resourceFromAttributes({
+    [ATTR_SERVICE_NAME]: env.OTEL_SERVICE_NAME,
+    [ATTR_SERVICE_VERSION]: env.OTEL_SERVICE_VERSION,
+  }),
+  traceExporter: new OTLPTraceExporter({
+    url: `${env.OTEL_EXPORTER_OTLP_TRACES_ENDPOINT}`,
+  }),
   resourceDetectors: [],
   metricReader: new PeriodicExportingMetricReader({
-    exporter: metricExporter,
+    exporter: new OTLPMetricExporter({
+      url: `${env.OTEL_EXPORTER_OTLP_METRICS_ENDPOINT}`,
+    }),
     exportIntervalMillis: 10_000, // 10 seconds
   }),
-  logRecordProcessor: new BatchLogRecordProcessor(logExporter, {
-    maxQueueSize: 2048,
-    scheduledDelayMillis: 1000, // Export batch every 1 second
-    exportTimeoutMillis: 30_000,
-    maxExportBatchSize: 512,
-  }),
+  logRecordProcessor: new BatchLogRecordProcessor(
+    new OTLPLogExporter({
+      url: `${env.OTEL_EXPORTER_OTLP_LOGS_ENDPOINT}`,
+    }),
+    {
+      maxQueueSize: 2048,
+      scheduledDelayMillis: 1000, // Export batch every 1 second
+      exportTimeoutMillis: 30_000,
+      maxExportBatchSize: 512,
+    }
+  ),
   instrumentations: [
     getNodeAutoInstrumentations({
       "@opentelemetry/instrumentation-pg": {

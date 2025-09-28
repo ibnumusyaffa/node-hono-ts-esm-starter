@@ -9,10 +9,10 @@ import {
   newsletterSchedule,
 } from "./app/product/product-job.js"
 
-boss.work(welcomeEmailJob)
-// boss.work(newsletterSchedule)
+boss.mountWorker(welcomeEmailJob)
+boss.mountWorker(newsletterSchedule)
 
-boss.start()
+await boss.start()
 
 serve(
   {

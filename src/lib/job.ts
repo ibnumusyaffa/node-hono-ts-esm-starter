@@ -285,7 +285,7 @@ export class Boss<T extends z.ZodType> {
     this.jobs = []
   }
 
-  work(job: Job<T> | Schedule) {
+  mountWorker(job: Job<T> | Schedule) {
     if (job instanceof Schedule) {
       const existingJob = this.schedule.find(
         (item) => item.jobName === job.jobName

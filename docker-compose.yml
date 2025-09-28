@@ -8,6 +8,8 @@ services:
       - .env
     ports:
       - 7900:4000
+    volumes:
+      - app-storage:/app/storage
     depends_on:
       - rabbitmq
       - redis
@@ -67,3 +69,4 @@ services:
 
 volumes:
   mysqldata:
+  app-storage:

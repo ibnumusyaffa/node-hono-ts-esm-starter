@@ -1,4 +1,4 @@
-import {pino} from "pino"
+import { pino } from "pino"
 import { type Context } from "hono"
 import { createMiddleware } from "hono/factory"
 import { routePath } from "hono/route"
@@ -28,9 +28,9 @@ export const HttpLog = createMiddleware(async (c, next) => {
 
   if (c.error) {
     const payload = { res, req, duration, error: c.error.message }
-    const message = `Failed ${res.statusCode} ${req.method} ${req.route} in ${duration}ms`
+    const message = `${req.method} ${req.route} failed in ${duration}ms with status code ${res.statusCode}`
 
-    if (c.res.status >= 400 && c.res.status < 500) {
+    if (res.statusCode < 500) {
       logger.warn(payload, message)
       return
     }
@@ -41,7 +41,7 @@ export const HttpLog = createMiddleware(async (c, next) => {
 
   logger.info(
     { res, req, duration },
-    `Completed ${res.statusCode} ${req.method} ${req.route} in ${duration}ms`
+    `${req.method} ${req.route} completed in ${duration}ms with status code ${res.statusCode}`
   )
 
   logger.info({ test: "t" }, "hhh")

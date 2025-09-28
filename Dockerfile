@@ -1,18 +1,37 @@
-FROM node:20-bullseye-slim
+FROM node:22-bullseye-slim
+
+# Install pnpm
+RUN npm install -g pnpm
 
 # Create app directory
 WORKDIR /app
 
-# Install app dependencies
-COPY package*.json /app
-RUN npm install
+# Copy package files for dependency installation
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
-# Bundle app source
-COPY . /app/
+# Install dependencies
+RUN pnpm install --frozen-lockfile
 
-# Build app
-RUN npm run build
+# Copy source code
+COPY src/ ./src/
+COPY tsconfig.json ./
 
-EXPOSE 3000
+# Build the application
+RUN pnpm run build
+
+# Create storage directory with proper permissions
+RUN mkdir -p storage/app storage/public && \
+    chown -R node:node /app && \
+    chmod -R 755 storage
+
+# Create volume mount point
+VOLUME ["/app/storage"]
+
+# Switch to non-root user
 USER node
-CMD ["npm", "start"]
+
+# Expose port
+EXPOSE 3000
+
+# Start the application
+CMD ["pnpm", "start"]
