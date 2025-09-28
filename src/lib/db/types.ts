@@ -3,181 +3,196 @@
  * Please do not edit it manually.
  */
 
-import type { ColumnType } from "kysely";
-import type { IPostgresInterval } from "postgres-interval";
+import type { ColumnType } from "kysely"
+import type { IPostgresInterval } from "postgres-interval"
 
-export type Generated<T> = T extends ColumnType<infer S, infer I, infer U>
-  ? ColumnType<S, I | undefined, U>
-  : ColumnType<T, T | undefined, T>;
+export type Generated<T> =
+  T extends ColumnType<infer S, infer I, infer U>
+    ? ColumnType<S, I | undefined, U>
+    : ColumnType<T, T | undefined, T>
 
-export type Int8 = ColumnType<string, bigint | number | string, bigint | number | string>;
+export type Int8 = ColumnType<
+  string,
+  bigint | number | string,
+  bigint | number | string
+>
 
-export type Interval = ColumnType<IPostgresInterval, IPostgresInterval | number | string, IPostgresInterval | number | string>;
+export type Interval = ColumnType<
+  IPostgresInterval,
+  IPostgresInterval | number | string,
+  IPostgresInterval | number | string
+>
 
-export type Json = JsonValue;
+export type Json = JsonValue
 
-export type JsonArray = JsonValue[];
+export type JsonArray = JsonValue[]
 
 export type JsonObject = {
-  [x: string]: JsonValue | undefined;
-};
+  [x: string]: JsonValue | undefined
+}
 
-export type JsonPrimitive = boolean | number | string | null;
+export type JsonPrimitive = boolean | number | string | null
 
-export type JsonValue = JsonArray | JsonObject | JsonPrimitive;
+export type JsonValue = JsonArray | JsonObject | JsonPrimitive
 
-export type PgbossJobState = "active" | "cancelled" | "completed" | "created" | "failed" | "retry";
+export type PgbossJobState =
+  | "active"
+  | "cancelled"
+  | "completed"
+  | "created"
+  | "failed"
+  | "retry"
 
-export type Timestamp = ColumnType<Date, Date | string, Date | string>;
+export type Timestamp = ColumnType<Date, Date | string, Date | string>
 
 export interface Account {
-  accessToken: string | null;
-  accessTokenExpiresAt: Timestamp | null;
-  accountId: string;
-  createdAt: Generated<Timestamp>;
-  id: string;
-  idToken: string | null;
-  password: string | null;
-  providerId: string;
-  refreshToken: string | null;
-  refreshTokenExpiresAt: Timestamp | null;
-  scope: string | null;
-  updatedAt: Timestamp;
-  userId: string;
+  accessToken: string | null
+  accessTokenExpiresAt: Timestamp | null
+  accountId: string
+  createdAt: Generated<Timestamp>
+  id: string
+  idToken: string | null
+  password: string | null
+  providerId: string
+  refreshToken: string | null
+  refreshTokenExpiresAt: Timestamp | null
+  scope: string | null
+  updatedAt: Timestamp
+  userId: string
 }
 
 export interface PgbossArchive {
-  archived_on: Generated<Timestamp>;
-  completed_on: Timestamp | null;
-  created_on: Timestamp;
-  data: Json | null;
-  dead_letter: string | null;
-  expire_in: Interval;
-  id: string;
-  keep_until: Timestamp;
-  name: string;
-  output: Json | null;
-  policy: string | null;
-  priority: number;
-  retry_backoff: boolean;
-  retry_count: number;
-  retry_delay: number;
-  retry_limit: number;
-  singleton_key: string | null;
-  singleton_on: Timestamp | null;
-  start_after: Timestamp;
-  started_on: Timestamp | null;
-  state: PgbossJobState;
+  archived_on: Generated<Timestamp>
+  completed_on: Timestamp | null
+  created_on: Timestamp
+  data: Json | null
+  dead_letter: string | null
+  expire_in: Interval
+  id: string
+  keep_until: Timestamp
+  name: string
+  output: Json | null
+  policy: string | null
+  priority: number
+  retry_backoff: boolean
+  retry_count: number
+  retry_delay: number
+  retry_limit: number
+  singleton_key: string | null
+  singleton_on: Timestamp | null
+  start_after: Timestamp
+  started_on: Timestamp | null
+  state: PgbossJobState
 }
 
 export interface PgbossJob {
-  completed_on: Timestamp | null;
-  created_on: Generated<Timestamp>;
-  data: Json | null;
-  dead_letter: string | null;
-  expire_in: Generated<Interval>;
-  id: Generated<string>;
-  keep_until: Generated<Timestamp>;
-  name: string;
-  output: Json | null;
-  policy: string | null;
-  priority: Generated<number>;
-  retry_backoff: Generated<boolean>;
-  retry_count: Generated<number>;
-  retry_delay: Generated<number>;
-  retry_limit: Generated<number>;
-  singleton_key: string | null;
-  singleton_on: Timestamp | null;
-  start_after: Generated<Timestamp>;
-  started_on: Timestamp | null;
-  state: Generated<PgbossJobState>;
+  completed_on: Timestamp | null
+  created_on: Generated<Timestamp>
+  data: Json | null
+  dead_letter: string | null
+  expire_in: Generated<Interval>
+  id: Generated<string>
+  keep_until: Generated<Timestamp>
+  name: string
+  output: Json | null
+  policy: string | null
+  priority: Generated<number>
+  retry_backoff: Generated<boolean>
+  retry_count: Generated<number>
+  retry_delay: Generated<number>
+  retry_limit: Generated<number>
+  singleton_key: string | null
+  singleton_on: Timestamp | null
+  start_after: Generated<Timestamp>
+  started_on: Timestamp | null
+  state: Generated<PgbossJobState>
 }
 
 export interface PgbossQueue {
-  created_on: Generated<Timestamp>;
-  dead_letter: string | null;
-  expire_seconds: number | null;
-  name: string;
-  partition_name: string | null;
-  policy: string | null;
-  retention_minutes: number | null;
-  retry_backoff: boolean | null;
-  retry_delay: number | null;
-  retry_limit: number | null;
-  updated_on: Generated<Timestamp>;
+  created_on: Generated<Timestamp>
+  dead_letter: string | null
+  expire_seconds: number | null
+  name: string
+  partition_name: string | null
+  policy: string | null
+  retention_minutes: number | null
+  retry_backoff: boolean | null
+  retry_delay: number | null
+  retry_limit: number | null
+  updated_on: Generated<Timestamp>
 }
 
 export interface PgbossSchedule {
-  created_on: Generated<Timestamp>;
-  cron: string;
-  data: Json | null;
-  name: string;
-  options: Json | null;
-  timezone: string | null;
-  updated_on: Generated<Timestamp>;
+  created_on: Generated<Timestamp>
+  cron: string
+  data: Json | null
+  name: string
+  options: Json | null
+  timezone: string | null
+  updated_on: Generated<Timestamp>
 }
 
 export interface PgbossSubscription {
-  created_on: Generated<Timestamp>;
-  event: string;
-  name: string;
-  updated_on: Generated<Timestamp>;
+  created_on: Generated<Timestamp>
+  event: string
+  name: string
+  updated_on: Generated<Timestamp>
 }
 
 export interface PgbossVersion {
-  cron_on: Timestamp | null;
-  maintained_on: Timestamp | null;
-  monitored_on: Timestamp | null;
-  version: number;
+  cron_on: Timestamp | null
+  maintained_on: Timestamp | null
+  monitored_on: Timestamp | null
+  version: number
 }
 
 export interface Product {
-  created_at: Generated<Timestamp>;
-  id: Generated<Int8>;
-  name: string;
-  updated_at: Generated<Timestamp>;
+  created_at: Generated<Timestamp>
+  id: Generated<Int8>
+  name: string
+  updated_at: Generated<Timestamp>
 }
 
 export interface Session {
-  createdAt: Generated<Timestamp>;
-  expiresAt: Timestamp;
-  id: string;
-  ipAddress: string | null;
-  token: string;
-  updatedAt: Timestamp;
-  userAgent: string | null;
-  userId: string;
+  createdAt: Generated<Timestamp>
+  expiresAt: Timestamp
+  id: string
+  ipAddress: string | null
+  token: string
+  updatedAt: Timestamp
+  userAgent: string | null
+  userId: string
 }
 
 export interface User {
-  createdAt: Generated<Timestamp>;
-  email: string;
-  emailVerified: boolean;
-  id: string;
-  image: string | null;
-  name: string;
-  updatedAt: Generated<Timestamp>;
+  createdAt: Generated<Timestamp>
+  email: string
+  emailVerified: boolean
+  id: string
+  image: string | null
+  name: string
+  updatedAt: Generated<Timestamp>
 }
 
 export interface Verification {
-  createdAt: Generated<Timestamp>;
-  expiresAt: Timestamp;
-  id: string;
-  identifier: string;
-  updatedAt: Generated<Timestamp>;
-  value: string;
+  createdAt: Generated<Timestamp>
+  expiresAt: Timestamp
+  id: string
+  identifier: string
+  updatedAt: Generated<Timestamp>
+  value: string
 }
 
 export interface DB {
-  account: Account;
-  "pgboss.archive": PgbossArchive;
-  "pgboss.job": PgbossJob;
-  "pgboss.queue": PgbossQueue;
-  "pgboss.schedule": PgbossSchedule;
-  "pgboss.subscription": PgbossSubscription;
-  "pgboss.version": PgbossVersion;
-  product: Product;
-  session: Session;
-  user: User;
-  verification: Verification;
+  account: Account
+  "pgboss.archive": PgbossArchive
+  "pgboss.job": PgbossJob
+  "pgboss.queue": PgbossQueue
+  "pgboss.schedule": PgbossSchedule
+  "pgboss.subscription": PgbossSubscription
+  "pgboss.version": PgbossVersion
+  product: Product
+  session: Session
+  user: User
+  verification: Verification
 }

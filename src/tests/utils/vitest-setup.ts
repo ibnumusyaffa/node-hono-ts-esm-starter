@@ -1,7 +1,6 @@
 import { expect } from "vitest"
 import { db } from "@/lib/db/index.js"
 
-
 expect.extend({
   async toHaveRowInTable(data: Record<string, any>, tableName: string) {
     try {

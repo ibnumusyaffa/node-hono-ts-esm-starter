@@ -25,7 +25,6 @@ const { registerOptions, waitForAllMessagesAcknowledged } =
 
 register("import-in-the-middle/hook.mjs", import.meta.url, registerOptions)
 
-
 const sdk = new NodeSDK({
   resource: resourceFromAttributes({
     [ATTR_SERVICE_NAME]: env.OTEL_SERVICE_NAME,

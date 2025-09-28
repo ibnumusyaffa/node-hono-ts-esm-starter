@@ -2,11 +2,11 @@ import { defineConfig } from "kysely-ctl"
 import { db, migrator } from "./src/lib/db/index.js"
 
 export default defineConfig({
-  kysely:db,
+  kysely: db,
   migrations: {
     migrationFolder: "./src/lib/db/migrations",
     //@ts-ignore
-    migrator:migrator,
+    migrator: migrator,
   },
   plugins: [],
   seeds: {

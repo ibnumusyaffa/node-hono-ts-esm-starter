@@ -21,9 +21,7 @@ function Template({ url, name }: TemplateProps) {
   return (
     <Html>
       <Head />
-      <Preview>
-        Reset your password to regain access to your account
-      </Preview>
+      <Preview>Reset your password to regain access to your account</Preview>
       <Body style={main}>
         <Container style={container}>
           <Section style={logoContainer}>
@@ -54,8 +52,8 @@ function Template({ url, name }: TemplateProps) {
             </Text>
 
             <Text style={footer}>
-              If you didn't request a password reset, you can safely ignore
-              this email. Your password will remain unchanged.
+              If you didn't request a password reset, you can safely ignore this
+              email. Your password will remain unchanged.
             </Text>
           </Section>
         </Container>
