@@ -1,11 +1,6 @@
 import { Hono } from "hono"
-import { storage } from "@/lib/storage.js"
-import mime from "mime-types"
+import { storage, getContentType } from "@/lib/storage.js"
 import { randomUUID } from "node:crypto"
-
-function getContentType(filename: string) {
-  return mime.lookup(filename) || "application/octet-stream"
-}
 
 const router = new Hono()
 // Local storage upload

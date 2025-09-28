@@ -1,5 +1,5 @@
 import path from "node:path"
-
+import mime from "mime-types"
 import { FileStorage } from "@flystorage/file-storage"
 
 import { LocalStorageAdapter } from "@flystorage/local-fs"
@@ -20,3 +20,8 @@ const localAdapter = new LocalStorageAdapter(
 
 // Initialize storage
 export const storage = new FileStorage(localAdapter)
+
+
+export function getContentType(filename: string) {
+  return mime.lookup(filename) || "application/octet-stream"
+}
