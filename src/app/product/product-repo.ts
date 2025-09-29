@@ -1,9 +1,7 @@
 import { type Trx } from "@/lib/db/index.js"
 import type { Product } from "@/lib/db/types.js"
-import { SpanStatusCode, trace, type Span } from "@opentelemetry/api"
+import { withSpan } from "@/lib/tracing.js"
 import type { Insertable } from "kysely"
-
-const tracer = trace.getTracer("product-repository")
 
 export async function findAll(
   trx: Trx,
@@ -11,9 +9,13 @@ export async function findAll(
   offset: number,
   keyword?: string
 ) {
-  return tracer.startActiveSpan("findAll", async (span: Span) => {
-    try {
-      span.setAttributes({ limit, offset, keyword: keyword ?? "" })
+  return withSpan(
+    "product-repository",
+    "findAll",
+    {
+      attributes: { limit, offset, keyword: keyword },
+    },
+    async (span) => {
       let query = trx.selectFrom("product")
 
       if (keyword) {
@@ -25,23 +27,14 @@ export async function findAll(
         query.select((eb) => eb.fn.countAll().as("total")).executeTakeFirst(),
       ])
 
-      span.setStatus({ code: SpanStatusCode.OK })
       return {
         products,
         total: Number(countResult?.total ?? 0),
       }
-    } catch (error) {
-      span.recordException(error as Error)
-      span.setStatus({
-        code: SpanStatusCode.ERROR,
-        message: (error as Error).message,
-      })
-      throw error
-    } finally {
-      span.end()
     }
-  })
+  )
 }
+
 
 export async function create(trx: Trx, data: Insertable<Product>) {
   return trx
