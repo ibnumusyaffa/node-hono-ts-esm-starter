@@ -16,7 +16,7 @@
     "format:all": "prettier --ignore-path .gitignore --write \"**/*.+(js|ts|jsx|tsx)\"",
     "format:check": "prettier --ignore-path .gitignore --check \"**/*.+(js|ts|jsx|tsx)\"",
     "db:migrate": "kysely migrate:latest",
-    "db:migrate:auth": "npx @better-auth/cli migrate",
+    "db:migrate:auth": "pnpm dlx @better-auth/cli migrate",
     "db:codegen": "kysely-codegen --dialect postgres --out-file ./src/lib/db/types.ts --default-schema=public",
     "knip": "knip"
   },
