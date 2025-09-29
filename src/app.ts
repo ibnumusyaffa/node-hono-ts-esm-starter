@@ -13,7 +13,7 @@ import upload from "@/app/upload/upload-router.js"
 
 const app = new Hono()
 
-//rename http instrumentation name to "METHOD /path:id" format
+//rename auto http instrumentation name to "METHOD /path:id" format
 app.use(async (c, next) => {
   const result = await next()
   const span = trace.getActiveSpan()

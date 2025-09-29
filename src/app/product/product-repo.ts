@@ -1,6 +1,6 @@
 import { type Trx } from "@/lib/db/index.js"
 import type { Product } from "@/lib/db/types.js"
-import { withSpan } from "@/lib/tracing.js"
+import { withSpan } from "@/lib/otel.js"
 import type { Insertable } from "kysely"
 
 export async function findAll(

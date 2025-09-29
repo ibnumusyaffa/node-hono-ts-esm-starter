@@ -1,9 +1,5 @@
-import {
-  type Span,
-  type SpanOptions,
-  SpanStatusCode,
-  trace,
-} from "@opentelemetry/api"
+import { context, propagation, SpanStatusCode, trace } from "@opentelemetry/api"
+import type { Span, SpanOptions } from "@opentelemetry/api"
 
 export async function withSpan<T>(
   tracerName: string,
@@ -54,4 +50,19 @@ export async function withSpan<T>(
   }
 
   return tracer.startActiveSpan(spanName, activeSpanFn)
+}
+
+export type Carrier = {
+  traceparent?: string
+  tracestate?: string
+}
+
+export function getCurrentTraceparent(): Carrier | undefined {
+  try {
+    const headers: Record<string, string> = {}
+    propagation.inject(context.active(), headers)
+    return headers
+  } catch (error) {
+    return undefined
+  }
 }

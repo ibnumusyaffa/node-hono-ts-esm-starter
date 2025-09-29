@@ -15,23 +15,11 @@ import {
   propagation,
 } from "@opentelemetry/api"
 import { logger } from "./logger.js"
+import { getCurrentTraceparent } from "@/lib/otel.js"
+import type { Carrier } from "@/lib/otel.js"
 
 const tracer = trace.getTracer("job-queue")
 
-type Carrier = {
-  traceparent?: string
-  tracestate?: string
-}
-
-function getCurrentTraceparent(): Carrier | undefined {
-  try {
-    const headers: Record<string, string> = {}
-    propagation.inject(context.active(), headers)
-    return headers
-  } catch (error) {
-    return undefined
-  }
-}
 
 class Job<T extends z.ZodType> {
   private boss: pgBoss
