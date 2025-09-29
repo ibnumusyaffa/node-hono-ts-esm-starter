@@ -12,23 +12,23 @@ import { renameOtel } from "@/lib/otel.js"
 
 const app = new Hono()
 
+//default middleware
 app.use(renameOtel)
-
 app.use("*", otel())
 app.use("*", requestId())
 app.use(HttpLog)
 app.use(cors())
 
-//auth
+//application routes
 app.on(["POST", "GET"], "/api/auth/**", (c) => auth.handler(c.req.raw))
 app.get("/", async (c) => {
   logger.info("hello from root")
   return c.json({ message: "hello" })
 })
-
 app.route("/product", product)
 app.route("/file", upload)
 
+//error handler
 app.onError(errorHandler)
 
 export default app
