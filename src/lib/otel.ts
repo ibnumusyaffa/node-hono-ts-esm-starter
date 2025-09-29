@@ -1,6 +1,9 @@
 import { context, propagation, SpanStatusCode, trace } from "@opentelemetry/api"
 import type { Span, SpanOptions } from "@opentelemetry/api"
 
+import { createMiddleware } from "hono/factory"
+import { routePath } from "hono/route"
+
 export async function withSpan<T>(
   tracerName: string,
   spanName: string,
@@ -66,3 +69,13 @@ export function getCurrentTraceparent(): Carrier | undefined {
     return undefined
   }
 }
+
+
+//rename auto http instrumentation name to "METHOD /path:id" format
+export const renameOtel = createMiddleware(async (c, next) => {
+  await next()
+  const span = trace.getActiveSpan()
+  if (span) {
+    span.updateName(`${c.req.method} ${routePath(c)}`)
+  }
+})
