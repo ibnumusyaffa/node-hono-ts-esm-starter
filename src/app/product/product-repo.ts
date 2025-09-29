@@ -1,6 +1,6 @@
 import { type Trx } from "@/lib/db/index.js"
 import type { Product } from "@/lib/db/types.js"
-import { trace, type Span } from "@opentelemetry/api"
+import { SpanStatusCode, trace, type Span } from "@opentelemetry/api"
 import type { Insertable } from "kysely"
 
 const tracer = trace.getTracer("product-repository")
@@ -12,22 +12,33 @@ export async function findAll(
   keyword?: string
 ) {
   return tracer.startActiveSpan("findAll", async (span: Span) => {
-    span.setAttributes({ limit, offset, keyword: keyword ?? "" })
-    let query = trx.selectFrom("product")
+    try {
+      span.setAttributes({ limit, offset, keyword: keyword ?? "" })
+      let query = trx.selectFrom("product")
 
-    if (keyword) {
-      query = query.where("name", "like", `%${keyword}%`)
-    }
+      if (keyword) {
+        query = query.where("name", "like", `%${keyword}%`)
+      }
 
-    const [products, countResult] = await Promise.all([
-      query.selectAll().orderBy("id").limit(limit).offset(offset).execute(),
-      query.select((eb) => eb.fn.countAll().as("total")).executeTakeFirst(),
-    ])
+      const [products, countResult] = await Promise.all([
+        query.selectAll().orderBy("id").limit(limit).offset(offset).execute(),
+        query.select((eb) => eb.fn.countAll().as("total")).executeTakeFirst(),
+      ])
 
-    span.end()
-    return {
-      products,
-      total: Number(countResult?.total ?? 0),
+      span.setStatus({ code: SpanStatusCode.OK })
+      return {
+        products,
+        total: Number(countResult?.total ?? 0),
+      }
+    } catch (error) {
+      span.recordException(error as Error)
+      span.setStatus({
+        code: SpanStatusCode.ERROR,
+        message: (error as Error).message,
+      })
+      throw error
+    } finally {
+      span.end()
     }
   })
 }
