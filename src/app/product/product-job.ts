@@ -21,7 +21,7 @@ export const welcomeEmailJob = boss
 export const newsletterSchedule = boss.createSchedule(
   "newsletter",
   "* * * * *",
-  async (_job) => {
+  async () => {
     logger.info("B:Start")
     await new Promise((resolve) => setTimeout(resolve, 1000 * 3))
     logger.info("B:Completed")
