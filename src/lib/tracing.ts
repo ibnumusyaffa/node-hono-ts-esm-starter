@@ -10,11 +10,31 @@ export async function withSpan<T>(
   spanName: string,
   options: SpanOptions,
   fn: (span: Span) => T | Promise<T>
+): Promise<T>
+export async function withSpan<T>(
+  tracerName: string,
+  spanName: string,
+  fn: (span: Span) => T | Promise<T>
+): Promise<T>
+export async function withSpan<T>(
+  tracerName: string,
+  spanName: string,
+  optionsOrFn: SpanOptions | ((span: Span) => T | Promise<T>),
+  fn?: (span: Span) => T | Promise<T>
 ) {
   const tracer = trace.getTracer(tracerName)
-  return tracer.startActiveSpan(spanName, options, async (span: Span) => {
+
+  const hasOptions = typeof optionsOrFn !== "function"
+  const options = hasOptions ? optionsOrFn : undefined
+  const callback = hasOptions ? fn : optionsOrFn
+
+  if (!callback) {
+    throw new Error("Callback function is missing")
+  }
+
+  const activeSpanFn = async (span: Span) => {
     try {
-      const result = await fn(span)
+      const result = await callback(span)
       span.setStatus({ code: SpanStatusCode.OK })
       return result
     } catch (error) {
@@ -27,5 +47,11 @@ export async function withSpan<T>(
     } finally {
       span.end()
     }
-  })
+  }
+
+  if (options) {
+    return tracer.startActiveSpan(spanName, options, activeSpanFn)
+  }
+
+  return tracer.startActiveSpan(spanName, activeSpanFn)
 }

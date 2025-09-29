@@ -9,32 +9,24 @@ export async function findAll(
   offset: number,
   keyword?: string
 ) {
-  return withSpan(
-    "product-repository",
-    "findAll",
-    {
-      attributes: { limit, offset, keyword: keyword },
-    },
-    async (span) => {
-      let query = trx.selectFrom("product")
+  return withSpan("product-repository", "findAll", async (span) => {
+    let query = trx.selectFrom("product")
 
-      if (keyword) {
-        query = query.where("name", "like", `%${keyword}%`)
-      }
-
-      const [products, countResult] = await Promise.all([
-        query.selectAll().orderBy("id").limit(limit).offset(offset).execute(),
-        query.select((eb) => eb.fn.countAll().as("total")).executeTakeFirst(),
-      ])
-
-      return {
-        products,
-        total: Number(countResult?.total ?? 0),
-      }
+    if (keyword) {
+      query = query.where("name", "like", `%${keyword}%`)
     }
-  )
-}
 
+    const [products, countResult] = await Promise.all([
+      query.selectAll().orderBy("id").limit(limit).offset(offset).execute(),
+      query.select((eb) => eb.fn.countAll().as("total")).executeTakeFirst(),
+    ])
+
+    return {
+      products,
+      total: Number(countResult?.total ?? 0),
+    }
+  })
+}
 
 export async function create(trx: Trx, data: Insertable<Product>) {
   return trx
