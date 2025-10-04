@@ -34,6 +34,14 @@ const env = createEnv({
     MAIL_USER: z.string().min(1).default("54e318bc5d0918"),
     MAIL_PASSWORD: z.string().min(1).default("b5c503d4fecda0"),
 
+    FILE_STORAGE: z.enum(["local", "s3"]).default("local"),
+
+    AWS_ACCESS_KEY_ID: z.string().min(1),
+    AWS_SECRET_ACCESS_KEY: z.string().min(1),
+    AWS_DEFAULT_REGION: z.string().min(1).default("auto"),
+    AWS_BUCKET: z.string().min(1),
+    AWS_ENDPOINT: z.string().min(1),
+
     TEST_CONTAINER: z
       .string()
       .refine((s) => s === "true" || s === "false")
