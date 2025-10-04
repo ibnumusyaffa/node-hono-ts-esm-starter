@@ -16,7 +16,7 @@ const S3client = new S3Client({
   },
 })
 const S3adapter = new AwsS3StorageAdapter(S3client, {
-  bucket: "development",
+  bucket: env.AWS_BUCKET,
 })
 
 // Initialize local adapter
