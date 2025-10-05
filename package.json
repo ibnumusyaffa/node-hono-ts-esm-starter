@@ -7,9 +7,9 @@
   "scripts": {
     "dev": "tsx --watch src/server.ts | pino-pretty",
     "dev:email": "email dev --dir ./src/emails",
-    "start": "node ./dist/server.js",
-    "start:otel": "node --import ./dist/otel.js ./dist/server.js",
-    "build": "rimraf dist && tsc && tsc-alias",
+    "start": "node ./build/server.js",
+    "start:otel": "node --import ./build/otel.js ./build/server.js",
+    "build": "rimraf build && tsc && tsc-alias",
     "test": "vitest run --reporter=verbose",
     "lint": "eslint ./src",
     "lint:fix": "eslint ./src --fix",

@@ -36,7 +36,7 @@ WORKDIR /app
 
 # Copy production dependencies and built files
 COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/build ./build
 COPY --from=builder /app/package.json ./
 
 # Create storage directories with proper permissions
@@ -54,4 +54,4 @@ USER node
 EXPOSE 3000
 
 # Start the application with dumb-init
-CMD ["dumb-init", "node", "./dist/server.js"]
+CMD ["dumb-init", "node", "./build/server.js"]
