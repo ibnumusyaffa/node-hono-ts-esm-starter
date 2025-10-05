@@ -18,8 +18,7 @@ const env = createEnv({
     APP_NAME: z.string().default("MyApp"),
     APP_DEBUG: z
       .string()
-      .refine((s) => s === "true" || s === "false")
-      .transform((s) => s === "true")
+      .transform((s) => s !== "false" && s !== "0")
       .default(true),
     APP_URL: z.string().default("http://localhost:3000"),
     FRONTEND_URL: z.string().default("http://localhost:5000"),
@@ -46,8 +45,7 @@ const env = createEnv({
 
     TEST_CONTAINER: z
       .string()
-      .refine((s) => s === "true" || s === "false")
-      .transform((s) => s === "true")
+      .transform((s) => s !== "false" && s !== "0")
       .default(false),
 
     // OpenTelemetry Configuration

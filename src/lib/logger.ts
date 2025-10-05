@@ -43,6 +43,4 @@ export const HttpLog = createMiddleware(async (c, next) => {
     { res, req, duration },
     `${req.method} ${req.route} completed in ${duration}ms with status code ${res.statusCode}`
   )
-
-  logger.info({ test: "t" }, "hhh")
 })
