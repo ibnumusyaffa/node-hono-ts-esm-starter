@@ -7,3 +7,5 @@ init.sh
 run.sh
 storage
 README.md
+node_modules
+.git
