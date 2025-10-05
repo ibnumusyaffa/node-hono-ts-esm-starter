@@ -37,11 +37,11 @@ const env = createEnv({
 
     FILE_STORAGE: z.enum(["local", "s3"]).default("local"),
 
-    AWS_ACCESS_KEY_ID: z.string().min(1),
-    AWS_SECRET_ACCESS_KEY: z.string().min(1),
-    AWS_DEFAULT_REGION: z.string().min(1).default("auto"),
-    AWS_BUCKET: z.string().min(1),
-    AWS_ENDPOINT: z.string().min(1),
+    AWS_ACCESS_KEY_ID: z.string().optional(),
+    AWS_SECRET_ACCESS_KEY: z.string().optional(),
+    AWS_DEFAULT_REGION: z.string().default("auto"),
+    AWS_BUCKET: z.string().optional(),
+    AWS_ENDPOINT: z.string().optional(),
 
     TEST_CONTAINER: z
       .string()
