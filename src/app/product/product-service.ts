@@ -26,7 +26,7 @@ export async function list({
       keyword
     )
 
-    await welcomeEmailJob.send({ message: "Hello, world!" })
+
 
     const meta = {
       total,
@@ -68,6 +68,7 @@ export async function detail(id: number) {
       },
       ttl: "1m",
     })
+
 
     if (!product) {
       throw new NotFoundError("Product not found")

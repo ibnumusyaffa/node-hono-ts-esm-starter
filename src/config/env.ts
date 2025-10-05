@@ -34,6 +34,8 @@ const env = createEnv({
     MAIL_USER: z.string().min(1).default("54e318bc5d0918"),
     MAIL_PASSWORD: z.string().min(1).default("b5c503d4fecda0"),
 
+    REDIS_URL: z.string().min(1),
+
     FILE_STORAGE: z.enum(["local", "s3"]).default("local"),
 
     AWS_ACCESS_KEY_ID: z.string().min(1),

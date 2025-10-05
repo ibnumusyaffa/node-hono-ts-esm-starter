@@ -39,7 +39,7 @@ export async function create(trx: Trx, data: Insertable<Product>) {
 export async function findById(trx: Trx, id: number) {
   return trx
     .selectFrom("product")
-    .where("id", "=", id.toString())
+    .where("id", "=", String(id))
     .selectAll()
     .executeTakeFirst()
 }

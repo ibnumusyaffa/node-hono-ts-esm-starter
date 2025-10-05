@@ -6,11 +6,10 @@ import { boss } from "@/lib/job.js"
 
 import {
   welcomeEmailJob,
-  newsletterSchedule,
 } from "./app/product/product-job.js"
 
-// boss.mountWorker(welcomeEmailJob)
-// boss.mountWorker(newsletterSchedule)
+boss.mountWorker(welcomeEmailJob)
+
 
 await boss.start()
 

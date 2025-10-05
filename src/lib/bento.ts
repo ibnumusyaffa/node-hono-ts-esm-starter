@@ -1,14 +1,16 @@
 import { BentoCache, bentostore } from "bentocache"
-import { memoryDriver } from "bentocache/drivers/memory"
-import { redisDriver, redisBusDriver } from "bentocache/drivers/redis"
+import { redisDriver } from "bentocache/drivers/redis"
+import { Redis } from "ioredis";
+import env from "@/config/env.js";
 
-const redisConnection = { host: "localhost", port: 6379 }
+
+const client = new Redis(env.REDIS_URL);
+
 export const bento = new BentoCache({
-  default: "multitier",
+  default: 'redis',
   stores: {
-    multitier: bentostore()
-      .useL1Layer(memoryDriver({ maxSize: "20mb" }))
-      .useL2Layer(redisDriver({ connection: redisConnection }))
-      .useBus(redisBusDriver({ connection: redisConnection })),
-  },
+    redis: bentostore().useL2Layer(redisDriver({
+      connection: client
+    }))
+  }
 })
