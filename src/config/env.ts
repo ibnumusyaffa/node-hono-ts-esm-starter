@@ -43,10 +43,6 @@ const env = createEnv({
     AWS_BUCKET: z.string().optional(),
     AWS_ENDPOINT: z.string().optional(),
 
-    TEST_CONTAINER: z
-      .string()
-      .transform((s) => s !== "false" && s !== "0")
-      .default(false),
 
     // OpenTelemetry Configuration
     OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: z
@@ -62,10 +58,6 @@ const env = createEnv({
     OTEL_SERVICE_NAME: z.string().default("hono-api"),
     OTEL_SERVICE_VERSION: z.string().default("1.0.0"),
 
-    // Grafana Cloud Configuration (for OTEL Collector)
-    GRAFANA_CLOUD_OTLP_ENDPOINT: z.string().optional(),
-    GRAFANA_CLOUD_INSTANCE_ID: z.string().optional(),
-    GRAFANA_CLOUD_API_KEY: z.string().optional(),
   },
   runtimeEnv: process.env,
   emptyStringAsUndefined: true,
