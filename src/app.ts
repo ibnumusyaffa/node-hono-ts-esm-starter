@@ -12,6 +12,9 @@ import { renameOtel } from "@/lib/otel.js"
 
 const app = new Hono()
 
+//health check endpoint (before middleware for minimal overhead)
+app.get("/health", (c) => c.json({ status: "ok" }))
+
 //default middleware
 app.use(renameOtel)
 app.use("*", otel())
