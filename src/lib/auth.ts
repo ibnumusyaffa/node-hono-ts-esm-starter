@@ -3,8 +3,8 @@ import { createMiddleware } from "hono/factory"
 import env from "@/config/env.js"
 import { UnauthorizedError } from "@/lib/error.js"
 import { Pool } from "pg"
-import { send as sendVerifyEmail } from "@/emails/verify-email.jsx"
-import { send as sendResetPasswordEmail } from "@/emails/reset-password-email.jsx"
+import { send as sendVerifyEmail } from "../emails/verify-email.js"
+import { send as sendResetPasswordEmail } from "../emails/reset-password-email.js"
 
 export const auth = betterAuth({
   logger: {

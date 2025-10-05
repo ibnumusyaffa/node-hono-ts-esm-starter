@@ -1,4 +1,4 @@
-import { pino } from "pino"
+import pino from "pino"
 import { type Context } from "hono"
 import { createMiddleware } from "hono/factory"
 import { routePath } from "hono/route"
