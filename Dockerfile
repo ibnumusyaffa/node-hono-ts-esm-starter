@@ -1,7 +1,7 @@
 # ============================================
-# Stage 1: Dependencies
+# Stage 1: Build
 # ============================================
-FROM node:22-bullseye-slim AS deps
+FROM node:22-bullseye-slim AS builder
 
 # Install pnpm
 RUN npm install -g pnpm
@@ -11,22 +11,8 @@ WORKDIR /app
 # Copy package files
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
-# Install all dependencies (including dev) for build stage
+# Install all dependencies
 RUN pnpm install --frozen-lockfile
-
-# ============================================
-# Stage 2: Build
-# ============================================
-FROM node:22-bullseye-slim AS builder
-
-# Install pnpm
-RUN npm install -g pnpm
-
-WORKDIR /app
-
-# Copy dependencies from deps stage
-COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/package.json /app/pnpm-lock.yaml /app/pnpm-workspace.yaml ./
 
 # Copy source files
 COPY src/ ./src/
@@ -35,11 +21,8 @@ COPY tsconfig.json ./
 # Build the application
 RUN pnpm run build
 
-# Install production dependencies only
-RUN pnpm install --prod --frozen-lockfile
-
 # ============================================
-# Stage 3: Production Runtime
+# Stage 2: Production Runtime
 # ============================================
 FROM node:22-bullseye-slim AS runtime
 
@@ -69,7 +52,6 @@ USER node
 
 # Expose port
 EXPOSE 3000
-
 
 # Start the application with dumb-init
 CMD ["dumb-init", "node", "./dist/server.js"]
