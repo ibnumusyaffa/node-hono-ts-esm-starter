@@ -12,21 +12,6 @@ services:
     depends_on:
       - redis
       - postgres
-      - otel-collector
-
-  otel-collector:
-    image: otel/opentelemetry-collector-contrib:latest
-    restart: always
-    command: ["--config=/etc/otel-collector-config.yaml"]
-    volumes:
-      - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
-    ports:
-      - "4317:4317"   # OTLP gRPC receiver
-      - "4318:4318"   # OTLP HTTP receiver
-    environment:
-      - GRAFANA_CLOUD_OTLP_ENDPOINT=${GRAFANA_CLOUD_OTLP_ENDPOINT}
-      - GRAFANA_CLOUD_INSTANCE_ID=${GRAFANA_CLOUD_INSTANCE_ID}
-      - GRAFANA_CLOUD_API_KEY=${GRAFANA_CLOUD_API_KEY}
 
   redis:
     image: redis:7.2.5

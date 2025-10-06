@@ -1,5 +1,5 @@
 import { context, propagation, SpanStatusCode, trace } from "@opentelemetry/api"
-import type { Span, SpanOptions } from "@opentelemetry/api"
+import type { Span } from "@opentelemetry/api"
 
 import { createMiddleware } from "hono/factory"
 import { routePath } from "hono/route"
@@ -7,33 +7,12 @@ import { routePath } from "hono/route"
 export async function withSpan<T>(
   tracerName: string,
   spanName: string,
-  options: SpanOptions,
   fn: (span: Span) => T | Promise<T>
-): Promise<T>
-export async function withSpan<T>(
-  tracerName: string,
-  spanName: string,
-  fn: (span: Span) => T | Promise<T>
-): Promise<T>
-export async function withSpan<T>(
-  tracerName: string,
-  spanName: string,
-  optionsOrFn: SpanOptions | ((span: Span) => T | Promise<T>),
-  fn?: (span: Span) => T | Promise<T>
-) {
+): Promise<T> {
   const tracer = trace.getTracer(tracerName)
-
-  const hasOptions = typeof optionsOrFn !== "function"
-  const options = hasOptions ? optionsOrFn : undefined
-  const callback = hasOptions ? fn : optionsOrFn
-
-  if (!callback) {
-    throw new Error("Callback function is missing")
-  }
-
-  const activeSpanFn = async (span: Span) => {
+  return tracer.startActiveSpan(spanName, async (span: Span) => {
     try {
-      const result = await callback(span)
+      const result = await fn(span)
       span.setStatus({ code: SpanStatusCode.OK })
       return result
     } catch (error) {
@@ -46,13 +25,7 @@ export async function withSpan<T>(
     } finally {
       span.end()
     }
-  }
-
-  if (options) {
-    return tracer.startActiveSpan(spanName, options, activeSpanFn)
-  }
-
-  return tracer.startActiveSpan(spanName, activeSpanFn)
+  })
 }
 
 export type Carrier = {
@@ -69,7 +42,6 @@ export function getCurrentTraceparent(): Carrier | undefined {
     return undefined
   }
 }
-
 
 //rename auto http instrumentation name to "METHOD /path:id" format
 export const renameOtel = createMiddleware(async (c, next) => {
