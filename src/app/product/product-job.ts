@@ -1,7 +1,7 @@
 import { boss } from "@/lib/job.js"
 import { logger } from "@/lib/logger.js"
 import { z } from "zod"
-
+import { delay } from "es-toolkit"
 //define job
 export const welcomeEmailJob = boss
   .createJob("job-11")
@@ -23,7 +23,7 @@ export const newsletterSchedule = boss.createSchedule(
   "* * * * *",
   async () => {
     logger.info("B:Start")
-    await new Promise((resolve) => setTimeout(resolve, 1000 * 3))
+    await delay(1000)
     logger.info("B:Completed")
   },
   {

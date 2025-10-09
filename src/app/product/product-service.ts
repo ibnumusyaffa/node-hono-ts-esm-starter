@@ -3,7 +3,6 @@ import z from "zod"
 import { db } from "@/lib/db/index.js"
 import { bento } from "@/lib/bento.js"
 import { NotFoundError } from "@/lib/error.js"
-import { welcomeEmailJob } from "./product-job.js"
 
 export async function list({
   page,
@@ -25,8 +24,6 @@ export async function list({
       offset,
       keyword
     )
-
-
 
     const meta = {
       total,
@@ -68,7 +65,6 @@ export async function detail(id: number) {
       },
       ttl: "1m",
     })
-
 
     if (!product) {
       throw new NotFoundError("Product not found")
