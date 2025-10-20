@@ -1,8 +1,8 @@
 import path from "node:path"
 import mime from "mime-types"
+
 import env from "@/config/env.js"
 import { FileStorage } from "@flystorage/file-storage"
-
 import { LocalStorageAdapter } from "@flystorage/local-fs"
 import { AwsS3StorageAdapter } from "@flystorage/aws-s3"
 import { S3Client } from "@aws-sdk/client-s3"
@@ -25,7 +25,7 @@ function createAdapter() {
     })
   }
 
-
+  //default to local storage
   return new LocalStorageAdapter(
     path.resolve(process.cwd(), "storage/app")
   )
