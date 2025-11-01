@@ -53,6 +53,10 @@ npm run dev
 - `npm run format:all` - Format code using Prettier for all files.
 - `npm run format:check` - Check code format using prettier.
 
+## OpenTelemetry metrics example
+
+- `GET /metrics/example?flavor=strawberry` records a counter, histogram, and up/down counter for demonstration purposes. Launch the server with `npm run start:otel` to export metrics to the OTLP endpoints configured via environment variables.
+
 ## Kysely/migration scripts
 
 - `npx kysely migrate:down` - Undo the last/specified migration that was run.
